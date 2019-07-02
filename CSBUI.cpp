@@ -1103,6 +1103,9 @@ i32 CSBUI(CSB_UI_MESSAGE *msg)
           //  sprintf(line, "p1=%d; lastestCharp1=%d", msg->p1, latestCharp1);
           //  UI_MessageBox(line, "UIM_CHAR", MESSAGE_OK);
           //};
+#ifdef _DEBUG
+          fprintf(stderr, "p1=%X; lastestCharp1=%X\n", msg->p1, latestCharp1);
+#endif
           if ((latestCharp1 == 3) && (msg->p1 == 3))
           {
             UI_Die(0x6d9a);
@@ -1129,6 +1132,9 @@ i32 CSBUI(CSB_UI_MESSAGE *msg)
 #endif
             latestCharType = TYPEKEY;
             latestCharXlate = key;
+#ifdef _DEBUG	  
+	    fprintf(stderr, "CSBUI->keyQueue enqueuing key %d\n", key);
+#endif
             if (next >= keyQueueLen) next=0;
             if (next != keyQueueStart)
             {
@@ -1143,14 +1149,18 @@ i32 CSBUI(CSB_UI_MESSAGE *msg)
           i32 key;
           latestScanp1 = msg->p1;
           latestScanp2 = msg->p2;
-          //printf("CSBUI(UIM_KEYDOWN)@%d\n",(ui32)UI_GetSystemTime());
+#ifdef _DEBUG	  
+          fprintf(stderr, "CSBUI(UIM_KEYDOWN)@%u\n", (ui32)UI_GetSystemTime());
+#endif
           if ((key = keyxlate.translate(msg->p2&0xff, 
                                         keyboardMode, 
                                         TYPESCAN))!= 0)
           {
             latestScanType = TYPESCAN;
             latestScanXlate = key;
-            //printf("CSBUI->keyQueue\n");
+#ifdef _DEBUG	  
+	    fprintf(stderr, "CSBUI->keyQueue enqueuing key %d\n", key);
+#endif
             i32 next = keyQueueEnd+1;
             if (next >= keyQueueLen) next=0;
             if (next != keyQueueStart)
@@ -1162,7 +1172,10 @@ i32 CSBUI(CSB_UI_MESSAGE *msg)
           else
           if ((key = keyxlate.translate(msg->p1, keyboardMode, TYPEMSCANL))!= 0)
           {
-            //printf("CSBUI->TYPEMSCANL\n");
+#ifdef _DEBUG	  
+            fprintf(stderr, "CSBUI->TYPEMSCANL. x=%d, y=%d\n",
+		    key>>16, key & 0xffff);
+#endif
             latestScanType = TYPEMSCANL;
             latestScanXlate = key;
             OnMouseSwitchAction(2, key>>16, key & 0xffff);
@@ -1172,7 +1185,10 @@ i32 CSBUI(CSB_UI_MESSAGE *msg)
           if ((key = keyxlate.translate(msg->p1, keyboardMode, TYPEMSCANR))!= 0)
           {
             latestScanType = TYPEMSCANR;
-            //printf("CSBUI->TYPEMSCANR\n");
+#ifdef _DEBUG	  
+            fprintf(stderr, "CSBUI->TYPEMSCANRx=%d, y=%d\n",
+		    key>>16, key & 0xffff);
+#endif
             latestScanXlate = key;
             OnMouseSwitchAction(1, key>>16, key & 0xffff);
             OnMouseSwitchAction(0);
