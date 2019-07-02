@@ -987,7 +987,7 @@ void LISTING::DisplayList(const char * title)
 }
 
 
-#if defined SDL12
+#if SDL_MAJOR_VERSION == 1
 void UI_SetDIBitsToDevice(
                            int dstX,
                            int dstY,
@@ -1039,7 +1039,7 @@ void UI_SetDIBitsToDevice(
   SDL_UpdateRect(surf, dstX, dstY, width, height);
   return;
 }
-#elif defined SDL20
+#elif SDL_MAJOR_VERSION == 2
 
 extern SDL_Renderer *sdlRenderer;
 extern SDL_Texture *sdlTexture;
