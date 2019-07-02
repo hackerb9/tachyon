@@ -95,7 +95,7 @@ typedef i32   intptr_t;
 # endif
 #endif
 
-void _Assert(bool, char *, i32, const char * = NULL);
+void _Assert(bool, const char [], i32, const char [] = NULL);
 
 #undef ASSERT
 #ifdef _DEBUG
