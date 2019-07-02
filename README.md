@@ -43,12 +43,12 @@ Unix systems should be able to simply run `make`
 
 Usage:
 
-    make		Compile tachyon with optimization
-    make debug		Compile with debugging + pointer bounds checking
-    make run		Compile and run the debug version, using DM data.
-    make clean		Remove temporary files (*.o and core)
-    make archive	Create a tar of the source code in the parent directory.
-			(Filename will include version number and today's date.)
+    make                Compile tachyon with optimization
+    make debug          Compile with debugging + pointer bounds checking
+    make run            Compile and run the debug version, using DM data.
+    make clean          Remove temporary files (*.o and core)
+    make archive        Create a tar of the source code in the parent directory.
+                        (Filename will include version number and today's date.)
 
 # Legal Note about data files
 
