@@ -202,11 +202,11 @@ void LoadNeededGraphics(i16 *P1, const i32 Count)
   };
   if (d.Word23328 != 0)
   {
-    iLOCAL_8 = (ui8 *)d.Pointer23310 - iLOCAL_4 - d.pStartMemory;
+    iLOCAL_8 = (i32)((ui8 *)d.Pointer23310 - iLOCAL_4 - d.pStartMemory);
   }
   else
   {
-    iLOCAL_8 = d.pStartAvailMemory - d.pStartMemory;
+    iLOCAL_8 = (i32)(d.pStartAvailMemory - d.pStartMemory);
   };
   A0 = (aReg)d.LogicalScreenBase;
   longGear((ui8 *)A0+32000) = iLOCAL_8;
@@ -258,7 +258,7 @@ void LoadNeededGraphics(i16 *P1, const i32 Count)
   };
   if (d.Word23328 != 0)
   {
-    D4L = d.Pointer23314 - (d.Pointer23310 - iLOCAL_4);
+    D4L = (i32)(d.Pointer23314 - (d.Pointer23310 - iLOCAL_4));
     if (D4L > 0)
     {
       TAG0220fa(D4L);
@@ -267,7 +267,7 @@ void LoadNeededGraphics(i16 *P1, const i32 Count)
     d.iAvailableGraphicMemory -= D4L;
   };
   A2 = (aReg)d.Pointer23310;
-  ASSERT(((int)A2 & 3) == 0,"A2");
+  ASSERT(((uintptr_t)A2 & 3) == 0,"A2");
   A3 = A2-2;
   while (A3>d.Pointer23314)
   {
@@ -278,14 +278,14 @@ void LoadNeededGraphics(i16 *P1, const i32 Count)
     }
     else
     {
-      iLOCAL_24 = A3 - d.ppUnExpandedGraphics[D5W];
+      iLOCAL_24 = (ui32)(A3 - d.ppUnExpandedGraphics[D5W]);
       D4L = iLOCAL_24+2;
       A2 -= D4L;
       A3 -= D4L;
       if (A2 != A3+2)
       {
         MemMove((ui8 *)A3+2, (ui8 *)A2, D4W);
-        ASSERT(((int)A2 & 3) == 0,"A2");
+        ASSERT(((uintptr_t)A2 & 3) == 0,"A2");
         d.ppUnExpandedGraphics[D5W] = A2;
       };
     };
@@ -329,7 +329,7 @@ void LoadNeededGraphics(i16 *P1, const i32 Count)
       {
         ReadGraphic(D5W, (ui8 *)A2);
       };
-      ASSERT(((int)A2 & 3) == 0,"A2");
+      ASSERT(((uintptr_t)A2 & 3) == 0,"A2");
       d.ppUnExpandedGraphics[D5W] = A2;
     };
 //

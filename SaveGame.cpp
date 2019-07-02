@@ -28,6 +28,7 @@ extern bool extendedPortraits;
 extern bool sequencedTimers;
 extern bool extendedTimers;
 extern bool DefaultDirectXOption;
+extern bool SupressDSAWarningOption;
 extern i32 deleteDuplicateTimers;
 extern bool extendedWallDecorations;
 extern bool disableSaves;
@@ -253,7 +254,7 @@ void ReadGameInfo(i32 handle, i32 size)
   {
     gameInfo = (char *)UI_malloc(100, MALLOC035);
     strcpy(gameInfo, "No game information was provided");
-    gameInfoSize = strlen(gameInfo)+1;  // Include the trailing nul
+    gameInfoSize = (i32)strlen(gameInfo)+1;  // Include the trailing nul
     return;
   };
   gameInfo = (char *)UI_malloc(size+1, MALLOC036);
@@ -308,6 +309,7 @@ i32 ReadExtendedFeatures(i32 handle)
   sequencedTimers = false;
   extendedTimers = false;
   DefaultDirectXOption = false;
+  SupressDSAWarningOption = false;
   extendedWallDecorations = false;
   spellFilterLocation = 0;
   dataMapLength = 0;
@@ -410,6 +412,8 @@ i32 ReadExtendedFeatures(i32 handle)
        (efb.extendedFlags & EXTENDEDFEATURESBLOCK::SequencedTimers) != 0;
   extendedTimers = 
        (efb.extendedFlags & EXTENDEDFEATURESBLOCK::ExtendedTimers) != 0;
+  SupressDSAWarningOption = 
+       (efb.extendedFlags & EXTENDEDFEATURESBLOCK::SupressDSAWarning) != 0;
   DefaultDirectXOption = 
        (efb.extendedFlags & EXTENDEDFEATURESBLOCK::DefaultDirectX) != 0;
   if (DefaultDirectXOption)
@@ -849,7 +853,7 @@ RESTARTABLE _DisplayDiskMenu(void)
   {
     DoMenu(_9_,
            NULL,
-           "SAVES ARE DISABLED",
+           TranslateLanguage("SAVES ARE DISABLED"),
            "OK",
            NULL,
            NULL,
@@ -1572,7 +1576,7 @@ RESTARTABLE _ReadEntireGame(void)
   if (d.datafileHandle < 0) 
   {
     char  *msg;
-    msg = (char *)UI_malloc(strlen(dungeonName) + 100, MALLOC030);
+    msg = (char *)UI_malloc((i32)strlen(dungeonName) + 100, MALLOC030);
     sprintf(msg, "Cannot open dungeon file '%s'", dungeonName);
     die(50, msg);
     UI_free(msg);
@@ -1688,7 +1692,7 @@ tag01ecb2:
   d.gameState = GAMESTATE_EnterPrison;
   goto tag01eb82;
 tag01ecde:
-  A3 = (aReg)d.Pointer22824;
+  A3 = (aReg)TranslateLanguage(d.Pointer22824);
   d.Word22972 = 3;
 tag01ece8:
   Signature(d.datafileHandle, &dungeonSignature1, &dungeonSignature2);
@@ -2851,7 +2855,8 @@ i16 ReadDatabases(void)
   if ((D0W!=0) && (LOCAL_6!=CheckSum)) return 0;
   if (d.PartyHasDied == 0)
   {
-    D0L = 4 *(d.numColumnPointers + numLevel);
+    //D0L = 4 *(d.numColumnPointers + numLevel);
+    D0L = sizeof(void *) *(d.numColumnPointers + numLevel);
     // D7W is number of index pointers at the
     //  front of d.10450.
     d.pppdPointer10450 = (CELLFLAG ***)allocateMemory(D0L, 1);

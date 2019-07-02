@@ -10,7 +10,7 @@
 //#ifdef _DEBUG
 #define TraceFlash(msg) traceFlash(msg)
 void traceFlash(const char *msg, i32 x=-1, i32 y=-1);
-void MemMove(ui8 *, ui8 *, int);
+void MemMove(void *, void *, int);
 //#else
 //#define TraceFlash(msg) ;
 //#endif
@@ -498,6 +498,7 @@ enum EXTENDEDFLAGS
   SequencedTimers         = 0x00000020,
   DefaultDirectX          = 0x00000040,
   ExtendedTimers          = 0x00000080,  // 32-bit time + 8-bit level.
+  SupressDSAWarning       = 0x00000100,  // Excessive DSA execution time.
 };
   i32       overlayOrdinal; //overlay Number + 1
   i32       overlayP1;
@@ -2340,11 +2341,10 @@ private:
   i16 word18; //swapped when read
               //Bits 4-7 =
               //Bits 8-11 =
+public:
   i16 word20; //swapped when read
-              //bits 0-3 = ???
               //bits 4-7 = time increment when not attacking
               //bits 8-11 = time increment when attacking
-public:
   ui8 uByte22[4];
   i16 word0(void)            const {return (i16)((uByte0<<8) | attackSound);};
   i16 word22(void)           const {return (i16)((uByte22[0]<<8) | uByte22[1]);};
@@ -2355,10 +2355,7 @@ public:
   ui8 word16_8_11(void)      const {return BITS8_11(word16);};
   ui8 word16_12_15(void)     const {return BITS12_15(word16);};
   ui8 FireResistance(void)   const {return BITS4_7(word18);};
-  ui8 PoisonResistance(void) const {return BITS8_11(word18);}
-  int AdditionalDelayFromAttackToMove(void) const {return BITS8_11(word20);};;
-  int AdditionalDelayFromMoveToAttack(void) const {return BITS4_7(word20);};;
-  int Word20_0_3(void)                      const {return BITS0_3(word20);};
+  ui8 PoisonResistance(void) const {return BITS8_11(word18);};
   ui8 timePerMove(void)      const {return movementTicks06;};
 };
 
@@ -3087,7 +3084,7 @@ RESTARTABLE _MainLoop(const CSB_UI_MESSAGE *);//TAG00068e//(void)
 void LoadPartyLevel(const i32 P1);//TAG000850(void)
 //   TAG00091c
 void vblFlashButn(i16 x1, i16 x2, i16 y1, i16 y2); // called by VBL handler
-void MemMove(ui8 *src, ui8 *dest, i32 byteCount); //TAG0009dc
+void MemMove(void *src, void *dest, i32 byteCount); //TAG0009dc
 void ClearMemory(ui8 *dest, i32 numByte); // TAG000a84
 void fillWithByte(ui8 *addr, i16 num, i8 value, i16 spacing);//TAG000ac0
 void fillMemory(i16 *pwAddr, i32 num, i16 value, i16 spacing); //TAG000af6
@@ -3153,7 +3150,7 @@ void DrawText(ui8 *dest,
 //#define PrintLines(n,a,b) CALL2(n,PrintLines,a,b)
 //RESTARTABLE _PrintLines(i32 color, pnt text); //TAG001aa8//(void)
 void PrintLines(i32 color, const char *text);//TAG001aa8
-void QuePrintLines(i32 color, const char *text); //TAG001aa8
+void QuePrintLines(i32 color, const char *text, bool translate); //TAG001aa8
 void PrintLinefeed(void);//TAG001c02
 void TextToViewport(i32 x, i32 y, i32 color, const char* text, bool translate);//TAG001c16
 void TextOutToScreen(i32 column,
@@ -3162,6 +3159,12 @@ void TextOutToScreen(i32 column,
                      i32,
                      const char* pnt,
                      bool translate=false);//TAG001c42
+void TextOutToScreen_Centered(i32 column,
+                              i32 row,
+                              i32 color,
+                              i32,
+                              const char* pnt,
+                              bool translate=false);//TAG001c42
 void TAG001c6e(void);
 //      001ce8 = TRAP 14
 //      001cf8 = TRAP 1
@@ -4041,7 +4044,7 @@ RESTARTABLE _TAG0051c2_1(const i16); //(void)
 //#define TAG008c40_2(n,a) CALL1(n,TAG008c40_2,a)
 //RESTARTABLE _TAG008c40_2(i16);//(void)
 #define TAG006c7e_xxx(n,a,b,c,d,e) CALL5(n,TAG006c7e_xxx,a,b,c,d,e)
-RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5);//(i32)
+RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, uintptr_t param3, i32, pnt P5);//(i32)
 #define TAG006c7e_2(n,a) CALL1(n,TAG006c7e_2,a)
 RESTARTABLE _TAG006c7e_2(i16);//(void)
 #define TAG006c7e_32(n,a,b) CALL2(n,TAG006c7e_32,a,b)
@@ -4099,7 +4102,7 @@ RESTARTABLE _TAG008c40_8(i16, i16);//(i32)
 #define TAG0051c2_31(n,a) CALL1(n,TAG0051c2_31,a)
 RESTARTABLE _TAG0051c2_31(i16);//(void)
 #define TAG004e4c_xxx(n,a,b,c) CALL3(n,TAG004e4c_xxx,a,b,c)
-RESTARTABLE _TAG004e4c_xxx(i16 /*P1*/, i16 P2, i32 P3);
+RESTARTABLE _TAG004e4c_xxx(i16 /*P1*/, i16 P2, uintptr_t P3);
 #define TAG004e4c_6(n,a,b) CALL2(n,TAG004e4c_6,a,b)
 RESTARTABLE _TAG004e4c_6(i16, TEXT *);//(void)
 #define TAG004e4c_8(n,a,b) CALL2(n,TAG004e4c_8,a,b)
@@ -4215,6 +4218,7 @@ RESTARTABLE _TAG009410(pnt, i32);//(void)
 #define TAG001dde(n,a) CALL1(n,TAG001dde,a)
 RESTARTABLE _TAG001dde(struct S6 *);//(i32)
 const char *TranslateLanguage(const char *);
+void TranslateWallLanguage(unsigned char *text);  // 0,1,2,...encoding //translate in place
 
 extern ui32 *pDSAparameters;
 class NEWDSAPARAMETERS

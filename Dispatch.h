@@ -247,15 +247,24 @@ void _RETURN_BOOL(bool);
 void _RETURN_pnt(pnt);
 
 void _CALL0(CODESTATE s);
-void _CALL1(CODESTATE s,i32 a);
-void _CALL2(CODESTATE s,i32 a,i32 b);
-void _CALL3(CODESTATE s,i32 a,i32 b,i32);
-void _CALL4(CODESTATE s,i32 a,i32 b,i32 c,i32 d);
-void _CALL5(CODESTATE s,i32 a,i32 b,i32 c,i32 d,i32 e);
+void _CALL1(CODESTATE s,uintptr_t a);
+void _CALL2(CODESTATE s,i32 a,uintptr_t b);
+void _CALL3(CODESTATE s,i32 a,uintptr_t b,uintptr_t c);
+void _CALL4(CODESTATE s,uintptr_t a,i32 b,uintptr_t c,uintptr_t d);
+void _CALL5(CODESTATE s,uintptr_t a,uintptr_t b,uintptr_t c,i32 d,uintptr_t e);
 void _CALL6(CODESTATE s,i32 a,i32 b,i32 c,i32 d,i32 e,i32 f);
 void _CALL7(CODESTATE s,i32 a,i32 b,i32 c,i32 d,i32 e,i32 f,i32 g);
 void _CALL8(CODESTATE s,i32 a,i32 b,i32 c,i32 d,i32 e,i32 f,i32 g,i32 h);
-void _CALL9(CODESTATE s,i32 a,i32 b,i32 c,i32 d,i32 e,i32 f,i32 g,i32 h,i32 i);
+void _CALL9(CODESTATE s,
+            uintptr_t a,
+            uintptr_t b,
+            uintptr_t c,
+            uintptr_t d,
+            uintptr_t e,
+            uintptr_t f,
+            uintptr_t g,
+            uintptr_t h,
+            uintptr_t i);
 
 //#define CALL(n,f,p1,p2,p3,p4,p5,p6) \
 //  mystate = n; \
@@ -271,31 +280,31 @@ return##n: ;};
 
 #define CALL1(n,f,p1) \
 { mystate = n; \
-  _CALL1 (st_##f,(i32)(p1)); \
+  _CALL1 (st_##f,(uintptr_t)p1); \
   return DoesNotExist; \
 return##n: ;};
 
 #define CALL2(n,f,p1,p2) \
 { mystate = n; \
-  _CALL2 (st_##f,(i32)(p1),(i32)(p2)); \
+  _CALL2 (st_##f,p1,(uintptr_t)p2); \
   return DoesNotExist; \
 return##n: ;};
 
 #define CALL3(n,f,p1,p2,p3) \
 { mystate = n; \
-  _CALL3 (st_##f,(i32)(p1),(i32)(p2),(i32)(p3)); \
+  _CALL3 (st_##f,p1,(uintptr_t)p2,(uintptr_t)p3); \
   return DoesNotExist; \
 return##n: ;};
 
 #define CALL4(n,f,p1,p2,p3,p4) \
 { mystate = n; \
-  _CALL4 (st_##f,(i32)(p1),(i32)(p2),(i32)(p3),(i32)(p4)); \
+  _CALL4 (st_##f,(uintptr_t)p1,p2,(uintptr_t)p3,(uintptr_t)p4); \
   return DoesNotExist; \
 return##n: ;};
 
 #define CALL5(n,f,p1,p2,p3,p4,p5) \
 { mystate = n; \
-  _CALL5 (st_##f,(i32)(p1),(i32)(p2),(i32)(p3),(i32)(p4),(i32)(p5)); \
+  _CALL5 (st_##f,(uintptr_t)(p1),(uintptr_t)(p2),(uintptr_t)(p3),(i32)(p4),(uintptr_t)(p5)); \
   return DoesNotExist; \
 return##n: ;};
 
@@ -313,8 +322,17 @@ return##n: ;};
 
 #define CALL9(n,f,p1,p2,p3,p4,p5,p6,p7,p8,p9) \
 { mystate = n; \
-  _CALL9 (st_##f,(i32)(p1),(i32)(p2),(i32)(p3),(i32)(p4),(i32)(p5),i32(p6),i32(p7),i32(p8),i32(p9)); \
-  return DoesNotExist; \
+  _CALL9 (st_##f,        \
+         (uintptr_t)p1,  \
+         (uintptr_t)p2,  \
+         (uintptr_t)p3,  \
+         (uintptr_t)p4,  \
+         (uintptr_t)p5,  \
+         (uintptr_t)p6,  \
+         (uintptr_t)p7,  \
+         (uintptr_t)p8,  \
+         (uintptr_t)p9); \
+  return DoesNotExist;   \
 return##n: ;};
 
 #define RETURN {mystate=0; _RETURN(); return DoesNotExist;};

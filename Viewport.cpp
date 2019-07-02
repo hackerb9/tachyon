@@ -2474,8 +2474,15 @@ void Interpret(ui16 *code,
   rpush(0xffff);
   for (;;)
   {
-    GTRACE_8("    P=%6d instr=%6d  sp=%3d TOS = %d %d %d %d %d\n", P-code, *P, (ui8)sp, 
-                  stack[(ui8)(sp+0)],stack[(ui8)(sp+1)],stack[(ui8)(sp+2)],stack[(ui8)(sp+3)],stack[(ui8)(sp+4)])
+    GTRACE_8("    P=%6d instr=%6d  sp=%3d TOS = %d %d %d %d %d\n", 
+             (i32)(P-code), 
+            *P, 
+             (ui8)sp, 
+             stack[(ui8)(sp+0)],
+             stack[(ui8)(sp+1)],
+             stack[(ui8)(sp+2)],
+             stack[(ui8)(sp+3)],
+             stack[(ui8)(sp+4)])
     switch (*(P++))  // opcode
     {
     case F4L1:  push(RF4L1);  break;
@@ -3293,7 +3300,7 @@ void Interpret(ui16 *code,
     default:
       if (*(P-1) < 60000)
       {
-        rpush(P-code);
+        rpush((i32)(P-code));
         P = code + *(P-1);
         break;
       };
@@ -5652,7 +5659,7 @@ i32 BACKGROUND_LIB::GetDecorationBitmap(
   if (locationNumber >= numLocation) return -1;
   pGraphic++;
   *pLocation = (ui8 *)(pGraphic + locationNumber);
-  bsize = (result + actualSize) - (i8 *)(*pBitmap);
+  bsize = (i32)((result + actualSize) - (i8 *)(*pBitmap));
   if (bsize < 0) return -1;
   *pBitmapSize = bsize;
   return 0;

@@ -1043,6 +1043,53 @@ void UI_SetDIBitsToDevice(
 
 extern SDL_Renderer *sdlRenderer;
 extern SDL_Texture *sdlTexture;
+void *dstPixels;
+int pitch;
+
+void UI_ScreenStartUpdates(void)
+{
+  SDL_Rect textureRect;
+  if (sdlTexture == NULL) return;
+  textureRect.x = 0;
+  textureRect.y = 0;
+  textureRect.w = 320;
+  textureRect.h = 200;
+  if (SDL_LockTexture(sdlTexture,
+                      &textureRect,
+                      &dstPixels,
+                      &pitch))
+  {
+    UI_MessageBox(SDL_GetError(),
+                  "UI_SetDIBitsToDevice",
+                  MESSAGE_OK);
+    die(0x53a9);
+  };
+}
+
+void UI_ScreenEndUpdates(void)
+{
+  if (sdlTexture == NULL) return;
+  SDL_UnlockTexture(sdlTexture);
+}
+
+void UI_ScreenPresent(void)
+{
+  SDL_Rect textureRect;
+  SDL_Rect rendererRect;
+  textureRect.x = 0;
+  textureRect.y = 0;
+  textureRect.w = 320;
+  textureRect.h = 200;
+  rendererRect.x = 0;
+  rendererRect.y = 0;
+  rendererRect.w = 320;
+  rendererRect.h = 200;
+  SDL_RenderCopy(sdlRenderer,
+                 sdlTexture,
+                 &textureRect,
+                 &rendererRect);
+  SDL_RenderPresent(sdlRenderer);
+}
 
 void UI_SetDIBitsToDevice(
                            int dstX,
@@ -1059,42 +1106,23 @@ void UI_SetDIBitsToDevice(
                          )
 {
   SDL_Rect textureRect;
-  SDL_Rect rendererRect;
-  void *dstPixels;
-  int pitch;
   int line;
   if (sdlTexture == NULL) return;
-  textureRect.x = 0;
-  textureRect.y = 0;
-  textureRect.w = width;
-  textureRect.h = height;
-  if (SDL_LockTexture(sdlTexture,
-                      &textureRect,
-                      &dstPixels,
-                      &pitch))
-  {
-    UI_MessageBox(SDL_GetError(),
-                  "UI_SetDIBitsToDevice",
-                  MESSAGE_OK);
-    die(0x53a9);
-  };
+//  textureRect.x = 0;
+//  textureRect.y = 0;
+//  textureRect.w = width;
+//  textureRect.h = height;
+//  if (SDL_LockTexture(sdlTexture,
+//                      &textureRect,
+//                      &dstPixels,
+//                      &pitch))
               
   for (line=0; line<height; line++)
   {
-    memcpy((ui8 *)dstPixels+pitch*line, 
+    memcpy((ui8 *)dstPixels+2*dstX+pitch*(line+dstY), 
            bitmap+2*320*(line), width*2);
   };
-  SDL_UnlockTexture(sdlTexture);
   //SDL_RenderClear(sdlRenderer);
-  rendererRect.x = dstX;
-  rendererRect.y = dstY;
-  rendererRect.w = width;
-  rendererRect.h = height;
-  SDL_RenderCopy(sdlRenderer,
-                 sdlTexture,
-                 &textureRect,
-                 &rendererRect);
-  SDL_RenderPresent(sdlRenderer);
   return;
 }
 #else

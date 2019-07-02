@@ -142,7 +142,7 @@ void FILETABLE::SetFile(FILE *f, const char *fileName)
   {
     if (fileName != NULL)
     {
-      m_fileName = (char *)UI_malloc(strlen(fileName)+1, MALLOC107);
+      m_fileName = (char *)UI_malloc((ui32)strlen(fileName)+1, MALLOC107);
       strcpy(m_fileName, fileName);
     };
   }
@@ -304,7 +304,7 @@ i32 READ(i32 file, i32 num, ui8 *buf)
   i32 position;
   if (GETFILE((ui16)file) == NULL) return -1;
   position = LSEEK(0, file, SEEK_CUR);
-  result = fread(buf,1,num,GETFILE((ui16)file));
+  result = (ui32)fread(buf,1,num,GETFILE((ui16)file));
   if (GETFILETABLE((ui16)file)->Enciphered())
   {
     RC4_encipher((unsigned char *)buf,result,position);
@@ -320,7 +320,7 @@ i32 WRITE(i16 file, i32 num, ui8 *buf)
   {
     RC4_encipher((unsigned char *)buf, num, position);
   };
-  result = fwrite(buf,1,num,GETFILE((ui16)file));
+  result = (ui32)fwrite(buf,1,num,GETFILE((ui16)file));
   if (GETFILETABLE(file)->Enciphered())
   {
     RC4_encipher((unsigned char *)buf, num, position);
@@ -686,15 +686,15 @@ void RevealViewport(void)
 struct STATEENTRY
 {
   CODESTATE state;
-  i32 p1;
-  i32 p2;
-  i32 p3;
-  i32 p4;
-  i32 p5;
-  i32 p6;
-  i32 p7;
-  i32 p8;
-  i32 p9;
+  uintptr_t p1;
+  uintptr_t p2;
+  uintptr_t p3;
+  uintptr_t p4;
+  uintptr_t p5;
+  uintptr_t p6;
+  uintptr_t p7;
+  uintptr_t p8;
+  uintptr_t p9;
 };
 
 #define MaxState 20
@@ -745,7 +745,7 @@ void _CALL0(CODESTATE newState)
 }
 
 void _CALL1(CODESTATE newState,
-            i32 p1)
+            uintptr_t p1)
 
 {
   ASSERT(numState < MaxState,"maxState");
@@ -756,9 +756,10 @@ void _CALL1(CODESTATE newState,
   return ;
 }
 
+
 void _CALL2(CODESTATE newState,
-            i32 p1,
-            i32 p2)
+            i32       p1,
+            uintptr_t p2)
 
 {
   ASSERT(numState < MaxState,"maxState");
@@ -772,8 +773,8 @@ void _CALL2(CODESTATE newState,
 
 void _CALL3(CODESTATE newState,
             i32 p1,
-            i32 p2,
-            i32 p3)
+            uintptr_t p2,
+            uintptr_t p3)
 
 {
   ASSERT(numState < MaxState,"maxState");
@@ -787,10 +788,10 @@ void _CALL3(CODESTATE newState,
 }
 
 void _CALL4(CODESTATE newState,
-            i32 p1,
+            uintptr_t p1,
             i32 p2,
-            i32 p3,
-            i32 p4)
+            uintptr_t p3,
+            uintptr_t p4)
 
 {
   ASSERT(numState < MaxState,"maxState");
@@ -805,11 +806,11 @@ void _CALL4(CODESTATE newState,
 }
 
 void _CALL5(CODESTATE newState,
-            i32 p1,
-            i32 p2,
-            i32 p3,
+            uintptr_t p1,
+            uintptr_t p2,
+            uintptr_t p3,
             i32 p4,
-            i32 p5)
+            uintptr_t p5)
 
 {
   ASSERT(numState < MaxState,"maxState");
@@ -873,15 +874,15 @@ void _CALL8(CODESTATE newState,
 }
 
 void _CALL9(CODESTATE newState,
-            i32 p1,
-            i32 p2,
-            i32 p3,
-            i32 p4,
-            i32 p5,
-            i32 p6,
-            i32 p7,
-            i32 p8,
-            i32 p9)
+            uintptr_t p1,
+            uintptr_t p2,
+            uintptr_t p3,
+            uintptr_t p4,
+            uintptr_t p5,
+            uintptr_t p6,
+            uintptr_t p7,
+            uintptr_t p8,
+            uintptr_t p9)
 
 {
   ASSERT(numState < MaxState,"maxState");
@@ -1033,7 +1034,7 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
     result = &_ReadEntireGame();
     break;
   case st_GameSetup:
-    result = &_GameSetup(stateStack[numState-1].p1);
+    result = &_GameSetup((ui32)stateStack[numState-1].p1);
     break;
   case st_ShowPrisonDoor:
     result = &_ShowPrisonDoor();
@@ -1048,17 +1049,19 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
     result = &_wvbl(pMsg);
     break;
   case st_VBLDelay:
-    result = &_VBLDelay(stateStack[numState-1].p1);
+    result = &_VBLDelay((ui32)stateStack[numState-1].p1);
     break;
   case st_SelectSaveGame:
-    result = &_SelectSaveGame(stateStack[numState-1].p1, stateStack[numState-1].p2, stateStack[numState-1].p3);
+    result = &_SelectSaveGame((ui32)stateStack[numState-1].p1, 
+                              (ui32)stateStack[numState-1].p2, 
+                              (ui32)stateStack[numState-1].p3);
     break;
   case st_WaitForMenuSelect:
     result = &_WaitForMenuSelect(
-      stateStack[numState-1].p1,
-      stateStack[numState-1].p2,
-      stateStack[numState-1].p3,
-      stateStack[numState-1].p4 );
+      (ui32)stateStack[numState-1].p1,
+      (ui32)stateStack[numState-1].p2,
+      (ui32)stateStack[numState-1].p3,
+      (ui32)stateStack[numState-1].p4 );
     break;
   case st_TAG01f746:
     result = &_TAG01f746();
@@ -1067,7 +1070,7 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
     result = &_TAG01f5ea();
     break;
   case st_HandleMouseEvents:
-    result = &_HandleMouseEvents(stateStack[numState-1].p1);
+    result = &_HandleMouseEvents((ui32)stateStack[numState-1].p1);
     break;
   case st_OpenPrisonDoors:
     result = &_OpenPrisonDoors();
@@ -1103,36 +1106,36 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
     break;
   case st_FlashButton:
     result = &_FlashButton(
-      stateStack[numState-1].p1,
-      stateStack[numState-1].p2,
-      stateStack[numState-1].p3,
-      stateStack[numState-1].p4);
+      (ui32)stateStack[numState-1].p1,
+      (ui32)stateStack[numState-1].p2,
+      (ui32)stateStack[numState-1].p3,
+      (ui32)stateStack[numState-1].p4);
     break;
   case st_TurnParty:
     result = &_TurnParty(
-      stateStack[numState-1].p1);
+      (ui32)stateStack[numState-1].p1);
     break;
   case st_TAG01a6ea:
     result = &_TAG01a6ea(
-      stateStack[numState-1].p1,
-      stateStack[numState-1].p2);
+      (ui32)stateStack[numState-1].p1,
+      (ui32)stateStack[numState-1].p2);
     break;
   case st_ResurrectReincarnateCancel:
     result = &_ResurrectReincarnateCancel(
-      stateStack[numState-1].p1);
+      (ui32)stateStack[numState-1].p1);
     break;
   case st_HandleMagicClick:
     result = &_HandleMagicClick(
-      stateStack[numState-1].p1,
-      stateStack[numState-1].p2);
+      (ui32)stateStack[numState-1].p1,
+      (ui32)stateStack[numState-1].p2);
     break;
   case st_MagicSelection:
     result = &_MagicSelection(
-      stateStack[numState-1].p1);
+      (ui32)stateStack[numState-1].p1);
     break;
   case st_ShowCredits:
     result = &_ShowCredits(
-      stateStack[numState-1].p1);
+      (ui32)stateStack[numState-1].p1);
     break;
   case st_DisplayDiskMenu:
     result = &_DisplayDiskMenu();
@@ -1145,9 +1148,9 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
       (char *)stateStack[numState-1].p4,
       (char *)stateStack[numState-1].p5,
       (char *)stateStack[numState-1].p6,
-      stateStack[numState-1].p7,
-      stateStack[numState-1].p8,
-      stateStack[numState-1].p9);
+      (ui32)stateStack[numState-1].p7,
+      (ui32)stateStack[numState-1].p8,
+      (ui32)stateStack[numState-1].p9);
     break;
   case st_ClickOnEye:
     result = &_ClickOnEye();
@@ -1169,16 +1172,16 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
 //    break;
   case st_TAG019fac:
     result = &_TAG019fac(
-      stateStack[numState-1].p1,
-      stateStack[numState-1].p2);
+      (ui32)stateStack[numState-1].p1,
+      (ui32)stateStack[numState-1].p2);
     break;
   case st_ExecuteAttack:
     result = &_ExecuteAttack(
-      stateStack[numState-1].p1);
+      (ui32)stateStack[numState-1].p1);
     break;
   case st_Attack:
     result = &_Attack(
-      stateStack[numState-1].p1,
+      (ui32)stateStack[numState-1].p1,
       (ATTACKTYPE)stateStack[numState-1].p2);
     break;
   case st_AskWhatToDo:
@@ -1192,21 +1195,21 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
     break;
   case st_Fusion:
     result = &_Fusion(
-      stateStack[numState-1].p1,
-      stateStack[numState-1].p2);
+      (ui32)stateStack[numState-1].p1,
+      (ui32)stateStack[numState-1].p2);
     break;
   case st_ReadSavedGame:
     result = &_ReadSavedGame(
-      stateStack[numState-1].p1);
+      (ui32)stateStack[numState-1].p1);
     break;
   case st_TAG00179c:
     result = &_TAG00179c(
-      stateStack[numState-1].p1);
+      (ui32)stateStack[numState-1].p1);
     break;
   case st_UtilityDialogBox:
     result = &_UtilityDialogBox(
       (char *)stateStack[numState-1].p1,
-      stateStack[numState-1].p2,
+      (ui32)stateStack[numState-1].p2,
       (char *)stateStack[numState-1].p3,
       (struct S12406 *)stateStack[numState-1].p4);
     break;
@@ -1229,15 +1232,15 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
     break;
   case st_TAG004430:
     result = &_TAG004430(
-      stateStack[numState-1].p1);
+      (ui32)stateStack[numState-1].p1);
     break;
   case st_DrawCharacterEditorScreen:
     result = &_DrawCharacterEditorScreen();
     break;
   case st_DrawCharacterDetails:
     result =  &_DrawCharacterDetails(
-      stateStack[numState-1].p1,
-      stateStack[numState-1].p2);
+      (ui32)stateStack[numState-1].p1,
+      (ui32)stateStack[numState-1].p2);
     break;
   case st_TAG00260e:
     result = &_TAG00260e();
@@ -1251,16 +1254,16 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
     break;
   case st_TAG000fc4:
     result = &_TAG000fc4(
-      stateStack[numState-1].p1);
+      (ui32)stateStack[numState-1].p1);
     break;
   case st_TAG000ede:
     result = &_TAG000ede(
-      stateStack[numState-1].p1,
+      (ui32)stateStack[numState-1].p1,
       (char *)stateStack[numState-1].p2);
     break;
   case st_FlashAttackDamage:
     result = &_FlashAttackDamage(
-      stateStack[numState-1].p1);
+      (ui32)stateStack[numState-1].p1);
     break;
 //  case st_ProcessTT_STONEROOM:
 //    result = &_ProcessTT_STONEROOM(
@@ -1277,9 +1280,9 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
     break;
   case st_TAG005a1e_xxx:
     result = &_TAG005a1e_xxx(
-      sw(stateStack[numState-1].p1),
-      sw(stateStack[numState-1].p2),
-      stateStack[numState-1].p3);
+      (i16)sw(stateStack[numState-1].p1),
+      (i16)sw(stateStack[numState-1].p2),
+      (ui32)stateStack[numState-1].p3);
     break;
   case st_FadePalette:
     result = &_FadePalette(
@@ -1298,7 +1301,7 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
       sw(stateStack[numState-1].p1),
       sw(stateStack[numState-1].p2),
       stateStack[numState-1].p3,
-      stateStack[numState-1].p4,
+      (ui32)stateStack[numState-1].p4,
       (pnt)stateStack[numState-1].p5);
     break;
   case st_TAG006c7e_2:
@@ -1319,8 +1322,8 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
   case st_TAG006c7e_9:
     result = &_TAG006c7e_9(
       sw(stateStack[numState-1].p1),
-      stateStack[numState-1].p2,
-      stateStack[numState-1].p3,
+      (ui32)stateStack[numState-1].p2,
+      (ui32)stateStack[numState-1].p3,
       (struct HCTI *)stateStack[numState-1].p4);
     break;
   case st_TAG00799a_6:
@@ -1334,31 +1337,31 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
   case st_TAG00799a_12:
     result = &_TAG00799a_12(
       sw(stateStack[numState-1].p1),
-      stateStack[numState-1].p2,
-      stateStack[numState-1].p3);
+      (ui32)stateStack[numState-1].p2,
+      (ui32)stateStack[numState-1].p3);
     break;
   case st_TAG007fdc_7:
     result = &_TAG007fdc_7(
       sw(stateStack[numState-1].p1),
-      stateStack[numState-1].p2,
-      stateStack[numState-1].p3,
-      stateStack[numState-1].p4);
+      (ui32)stateStack[numState-1].p2,
+      (ui32)stateStack[numState-1].p3,
+      (ui32)stateStack[numState-1].p4);
     break;
   case st_TAG007fdc_36:
     result = &_TAG007fdc_36(
       sw(stateStack[numState-1].p1),
-      stateStack[numState-1].p2,
-      stateStack[numState-1].p3);
+      (ui32)stateStack[numState-1].p2,
+      (ui32)stateStack[numState-1].p3);
     break;
   case st_TAG008c40_5:
     result = &_TAG008c40_5(
       sw(stateStack[numState-1].p1),
-      stateStack[numState-1].p2);
+      (ui32)stateStack[numState-1].p2);
     break;
   case st_TAG008c40_6:
     result = &_TAG008c40_6(
       sw(stateStack[numState-1].p1),
-      stateStack[numState-1].p2);
+      (ui32)stateStack[numState-1].p2);
     break;
   case st_TAG008c40_8:
     result = &_TAG008c40_8(
@@ -1392,12 +1395,12 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
     break;
   case st_TAG0051c2_2:
     result = &_TAG0051c2_2(
-      stateStack[numState-1].p1);
+      (ui32)stateStack[numState-1].p1);
     break;
   case st_TAG005d2a:
     result = &_TAG005d2a(
-      stateStack[numState-1].p1,
-      stateStack[numState-1].p2);
+      (ui32)stateStack[numState-1].p1,
+      (ui32)stateStack[numState-1].p2);
     break;
   case st_TAG0089b0:
     result = &_TAG0089b0(
@@ -1407,13 +1410,13 @@ void DispatchCSB(CSB_UI_MESSAGE *pMsg)
     break;
   case st_TAG005a1e_5:
     result = &_TAG005a1e_5(
-      stateStack[numState-1].p1,
-      stateStack[numState-1].p2);
+      (ui32)stateStack[numState-1].p1,
+      (ui32)stateStack[numState-1].p2);
     break;
   case st_TAG009410:
     result = &_TAG009410(
       (pnt)stateStack[numState-1].p1,
-      stateStack[numState-1].p2);
+      (ui32)stateStack[numState-1].p2);
     break;
   case st_TAG001dde:
     result = &_TAG001dde(
@@ -1442,7 +1445,7 @@ void DebugLoad(void *p, i32 a, i32 b, RN obj)
     f = fopen("debugload.txt","w");
     for (index=0; index<maxloaditems; index++) additions[index]=0;
   };
-  index = ((CHARDESC *)p) - d.CH16482;
+  index = (i32)(((CHARDESC *)p) - d.CH16482);
   if (index != 0) return;
   if ((obj != RNeof) && (obj!=RNnul))
   {

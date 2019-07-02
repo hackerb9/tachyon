@@ -405,7 +405,7 @@ SRCHPKT *SearchForObject(RN objID)
     if (*pRN == objID)
     {
       srchPkt.place = PLACE_InDungeon;
-      index = pRN-d.objectList;
+      index = (i32)(pRN - d.objectList);
       numLev = d.dungeonDatIndex->NumLevel();
       for (level=numLev-1; level>=0; level--)
       {

@@ -41,6 +41,17 @@ void DSAInstrumentation_Dump();
 void ReadTranslationFile(void);
 void RecordFile_Record(const char *line);
 
+struct MEM_BLOCKHEADER
+{
+  MEM_BLOCKHEADER *pNextBlockHeader;
+  MEM_BLOCKHEADER *pPrevBlockHeader;
+  ui32 id;
+  ui32 size;    // total size including this header and the trailing marker
+  ui32 marker;
+};
+
+
+
 struct SNDHEAD
 {
   i8  byte0[4];           //"RIFF"
@@ -198,7 +209,9 @@ LRESULT CALLBACK DSAListCallback(
 		case WM_INITDIALOG:
       {
         HWND  hList;
-        int i, idx;
+        //int i, idx;
+        int i;
+        LRESULT idx;
         hList = GetDlgItem(hDlg, IDC_DSAList);
         //if (initialEditText == NULL)
         //initialEditText = "No Game Information available";
@@ -271,7 +284,8 @@ LRESULT CALLBACK DSAListCallback(
         };
       case IDC_DSAList:
         {
-          i32 focus;
+          //i32 focus;
+          LRESULT focus;
           HWND  hList;
           hList = GetDlgItem(hDlg, IDC_DSAList);
           switch(HIWORD(wParam))
@@ -284,7 +298,8 @@ LRESULT CALLBACK DSAListCallback(
             if (DSAIndex.IsLoaded())
             {
               i32 traceNums[258];
-              i32 numSel;
+              //i32 numSel;
+              LRESULT numSel;
               i32 i;
               numSel = SendMessage(hList, LB_GETSELITEMS, (WPARAM)258, (LPARAM)traceNums);
               if (focus == 0)
@@ -307,9 +322,10 @@ LRESULT CALLBACK DSAListCallback(
               DSAIndex.NoTracing();
               for (i=0; i<numSel; i++)
               {
-                i32 dsaNum;
+                //i32 dsaNum;
+                LRESULT dsaNum;
                 dsaNum = SendMessage(hList, LB_GETITEMDATA, (WPARAM)traceNums[i], (LPARAM)0);
-                DSAIndex.SetTracing(dsaNum);
+                DSAIndex.SetTracing((i32)dsaNum);
               };
             }
             else
@@ -352,7 +368,8 @@ LRESULT CALLBACK DSAListCallback(
 
 i32 DSAListDialog::DoModal(void)
 {
-  i32 result;
+  //i32 result;
+  INT_PTR result;
   bool saveCursorShowing;
   //initialEditText = m_initialText;
   saveCursorShowing = cursorIsShowing;
@@ -365,7 +382,8 @@ i32 DSAListDialog::DoModal(void)
 //  };
   if (!saveCursorShowing) ShowCursor(false);
   UI_EnableMessages(mask);
-  return result;
+  //return result;
+  return (i32)result;
 }
 
 
@@ -494,7 +512,8 @@ LRESULT CALLBACK EditTextCallback(
 
 i32 EditDialog::DoModal(void)
 {
-  i32 result;
+  //i32 result;
+  INT_PTR result;
   bool saveCursorShowing;
   initialEditText = m_initialText;
   saveCursorShowing = cursorIsShowing;
@@ -507,7 +526,8 @@ i32 EditDialog::DoModal(void)
   //if (finalEditText != NULL) UI_free(finalEditText);
   finalEditText = NULL;
   initialEditText = NULL;
-  return result;
+  //return result;
+  return (i32)result;
 }
 #endif //005
 
@@ -800,7 +820,8 @@ void ReadConfigFile(void)
     {
       field = getfield(buf,col);
       if (folderName != NULL) UI_free(folderName);
-      folderName = (char *) UI_malloc(strlen(field) + 1, MALLOC012);
+      //folderName = (char *) UI_malloc(strlen(field) + 1, MALLOC012);
+      folderName = (char *) UI_malloc((i32)strlen(field) + 1, MALLOC012);
       if (folderName!=NULL)
       {
         strcpy(folderName, field);
@@ -1318,7 +1339,7 @@ i32 CSBUI(CSB_UI_MESSAGE *msg)
 
 
 void UI_PushMessage(MTYPE type,
-                    i32 p1,i32 p2,i32 p3,i32 p4,i32 p5,i32 p6)
+                    i32 p1,i32 p2,uintptr_t p3,i32 p4,i32 p5,i32 p6)
 {
   if (msgStackLen >= maxMessageStack-1) UI_Die(0x7db6);
   msgStack[msgStackLen].type = type;
@@ -1882,6 +1903,10 @@ void UI_ClearScreen(void)
   RedrawWindow(hWnd,NULL,NULL,RDW_ERASE|RDW_INVALIDATE);
 }
 
+void UI_ScreenStartUpdates(void) {};
+void UI_ScreenEndUpdates(void) {};
+void UI_ScreenPresent(void) {};
+
 void UI_SetDIBitsToDevice(i32 dstX,
                           i32 dstY,
                           i32 srcWidth,
@@ -2032,7 +2057,8 @@ bool UI_ProcessOption(char *key, char *value)
   if (strcmp(key,"DIRECTORY")==0)
   {
     if (folderName != NULL) UI_free(folderName);
-    folderName = (char *)UI_malloc(strlen(value)+2, MALLOC013);
+    //folderName = (char *)UI_malloc(strlen(value)+2, MALLOC013);
+    folderName = (char *)UI_malloc((i32)strlen(value)+2, MALLOC013);
     if (folderName != NULL) 
     {
       strcpy(folderName,value);
@@ -2239,7 +2265,8 @@ char *parentFolder(char *fileName, char *endname)
   if (endname > fileName)
   {
     endname++; //include the backslash at the end
-    result = (char *)UI_malloc(endname-fileName+1, MALLOC014);
+    //result = (char *)UI_malloc(endname-fileName+1, MALLOC014);
+    result = (char *)UI_malloc((i32)(endname-fileName)+1, MALLOC014);
     if (result != NULL)
     {
       memcpy(result,fileName,endname-fileName);
@@ -2287,7 +2314,7 @@ FILE *UI_fopen(const char *name, const char *flags)
 }
 #endif //034 _MSVC_INTEL||_LINUX 
 
-ui8 *allocatedMemoryList = NULL;
+MEM_BLOCKHEADER *allocatedMemoryList = NULL;
 ui32 listLength = 0;
 
 void AllocationError(void)
@@ -2300,19 +2327,14 @@ void AllocationError(void)
 void CheckAllAllocated(void)
 {
   static i32 callcount = 0;
-  ui8 *current, *end;
+  MEM_BLOCKHEADER *current;
   callcount++;
   for (current = allocatedMemoryList;
        current != NULL;
-       current = *(ui8 **)(current+0))
+       current = current->pNextBlockHeader)
   {
-#ifdef WIN98
-    end = current + *(ui32 *)(current-16);
-#else
-    end = current + *(ui32 *)(current-12);
-#endif
-    if (    (*(ui32 *)(end+0) != 0xfdfdfdfd)
-         || (*(ui32 *)(current-4) != 0xfdfdfdfd))
+    if (    (current->marker != 0xdfdfdfdf)
+         || (*(ui32 *)(((ui8 *)current)+current->size-sizeof(i32)) != 0xdfdfdfdf))
     {
       UI_MessageBox("Memory destruction","Disaster",MB_OK);
     };
@@ -2321,30 +2343,34 @@ void CheckAllAllocated(void)
 #endif //035
 
 #ifdef _DEBUG //036
-void *UI_malloc(i32 size, ui32 id)
+void *UI_malloc(ui32 size, ui32 id)
 #else
-void *UI_malloc(i32 size, ui32 /*id*/)
+void *UI_malloc(ui32 size, ui32 /*id*/)
 #endif //036
 {
-  void *result;
+  MEM_BLOCKHEADER *result;
 #ifdef _DEBUG //037
   CheckAllAllocated();
-  result = malloc(size+12);
+  i32 totalSize = size + sizeof(MEM_BLOCKHEADER) + sizeof(i32);
+  result = (MEM_BLOCKHEADER *)malloc(totalSize);
 #else
-  result = malloc(size);
+  result = (MEM_BLOCKHEADER *)malloc(size);
 #endif //037
   if (result == NULL) AllocationError();
 #ifdef _DEBUG //038
-  *(ui8 **)((ui8 *)result+0) = allocatedMemoryList;
-  *(ui8 **)((ui8 *)result+4) = NULL;
-  *(i32 *)((ui8 *)result+8) = id;
+  result->pNextBlockHeader = allocatedMemoryList;
+  result->pPrevBlockHeader = NULL;
+  result->id = id;
+  result->size = totalSize;
+  result->marker = 0xdfdfdfdf;
+  *(ui32 *)(((ui8 *)result)+totalSize-sizeof(i32)) = 0xdfdfdfdf;
   if (allocatedMemoryList != NULL)
   {
-    *(void **)(allocatedMemoryList+4) = result;
+    allocatedMemoryList->pPrevBlockHeader = result;
   };
-  allocatedMemoryList = (ui8 *)result;
+  allocatedMemoryList = result;
   if (id != 0xffff) listLength++;
-  return (void *)((ui8 *)result+12);
+  return (void *)(result+1);  // skip over the header
 #else
   return result;
 #endif //038
@@ -2356,43 +2382,47 @@ void *UI_realloc(void *buf, i32 size, ui32 id)
 void *UI_realloc(void *buf, i32 size, ui32 /*id*/)
 #endif //039
 {
-  void *result;
+  MEM_BLOCKHEADER *result=NULL;
 #ifdef _DEBUG //040
-  void **next, **prev;
+  i32 totalSize;
   if (buf == NULL)
   {
     return UI_malloc(size, id);
   }
   else
   {
-    buf = (void *)((ui8 *)buf - 12);
-    size += 12;
-    result = realloc(buf, size);
+    MEM_BLOCKHEADER *next, *prev, *cur;
+    CheckAllAllocated();
+    cur = (MEM_BLOCKHEADER *)((ui8 *)buf - sizeof(MEM_BLOCKHEADER));
+    totalSize = size + sizeof(MEM_BLOCKHEADER) + sizeof(i32);
+    result = (MEM_BLOCKHEADER *)realloc(cur, totalSize);
     if (result == NULL) AllocationError();
-    prev = ((void ***)result)[1];
+    result->size = totalSize;
+    prev = result->pPrevBlockHeader;
     if (prev == NULL)
     {
-      allocatedMemoryList = (ui8 *)result;
+      allocatedMemoryList = result;
     }
     else
     {
-      prev[0] = result; //Fix forward link of previous.
+      prev->pNextBlockHeader = result; //Fix forward link of previous.
     };
-    next = ((void ***)result)[0];
+    next = result->pNextBlockHeader;
+    *(ui32 *)((ui8 *)result + totalSize -sizeof(i32)) = 0xdfdfdfdf;
     if (next != NULL)
     {
-      next[1] = result;//Fix back link of next.
+      next->pPrevBlockHeader = result;//Fix back link of next.
     };
   };
-  return (void *)((char *)result + 12);
+  return (void *)(result + 1);
 #else
   if (buf == NULL)
   {
-    result = realloc(NULL, size);
+    result = (MEM_BLOCKHEADER *)realloc(NULL, size);
   }
   else
   {
-    result = realloc((char *)buf, size);
+    result = (MEM_BLOCKHEADER *)realloc((char *)buf, size);
   };
   if (result == NULL) AllocationError();
   return (void *)((char *)result);
@@ -2402,25 +2432,25 @@ void *UI_realloc(void *buf, i32 size, ui32 /*id*/)
 void UI_free(void *buf)
 {
 #ifdef _DEBUG //041
-  void **next, **prev;
+  MEM_BLOCKHEADER *cur, *next, *prev;
   CheckAllAllocated();
-  buf = (void *)((pnt)buf-12);
-  prev = ((void ***)buf)[1];
-  next = ((void ***)buf)[0];
+  cur = (MEM_BLOCKHEADER *)((ui8 *)buf-sizeof(MEM_BLOCKHEADER));
+  prev = cur->pPrevBlockHeader;
+  next = cur->pNextBlockHeader;
   if (prev == NULL)
   {
-    allocatedMemoryList = (ui8 *)next;
+    allocatedMemoryList = next;
   }
   else
   {
-    prev[0] = next;
+    prev->pNextBlockHeader = next;
   };
   if (next != NULL)
   {
-    next[1] = prev;
+    next->pPrevBlockHeader = prev;
   };
-  if ( ((ui32 *)buf)[2] != 0xffff) listLength--;
-  free(buf);
+  if (cur->id != 0xffff) listLength--;
+  free(cur);
 #else
   free(buf);
 #endif //041
@@ -2430,24 +2460,24 @@ void UI_CheckMemoryLeaks(void)
 {
   if (listLength != 0)
   {
-    char num[30];
     char result[300];
+    char num[30];
     int i;
-    ui8 *pCurrent;
+    MEM_BLOCKHEADER *pCurrent;
     result[0] = 0;
     for (i=0, pCurrent=allocatedMemoryList;
          (i<10) && (pCurrent!=NULL);
-         pCurrent = ((ui8 **)pCurrent)[0])
+         pCurrent = pCurrent->pNextBlockHeader)
     {
-      if (((i32 *)pCurrent)[2] == 0xffff) continue;
-      sprintf(num,"%d\n",((i32 *)pCurrent)[2]);
+      if (pCurrent->id == 0xffff) continue;
+      sprintf(num,"%d\n",pCurrent->id);
       strcat(result, num);
       i++;
     };
 
     // ROQUEN: bad me
 #if defined(_MSC_VER) //042
-    MessageBoxA(NULL,result,"Memory Leak Detected",MB_OK|MB_TASKMODAL);
+    UI_MessageBox(result,"Memory Leak Detected",MB_OK|MB_TASKMODAL);
 #else
 #endif //042
   };
@@ -2484,7 +2514,8 @@ void LISTING::AddLine(const char *text)
 void LISTING::AddText(const char *line)
 {
   i32 len;
-  len = (m_listing != NULL) ? len = strlen(m_listing) : 0;
+  //len = (m_listing != NULL) ? len = strlen(m_listing) : 0;
+  len = (m_listing != NULL) ? len = (i32)strlen(m_listing) : 0;
   m_listing = (char *)realloc(m_listing, (len + strlen(line) + 200)/100*100);
   strcpy(m_listing+len, line);
 }

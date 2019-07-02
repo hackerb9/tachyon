@@ -14,6 +14,7 @@ extern bool neophyteSkills;
 ui8 reincarnateAttributePenalty, reincarnateStatPenalty, randomPoints;
 pnt GetExternalPortraitAddress(i32 index);
 void GetText(char *result, i32 index);
+void DescribeChampionBones(char *dest, const char *pName, const char *objName);
 
 // *********************************************************
 //
@@ -1441,11 +1442,11 @@ void DrawCharacterState(i32 chIdx) // Character box at top of screen            
       D4W = sw(pcA3->load / 10);
       pcA0 = (char *)TAG014af6(D4W, 1, 3);
       StrCpy(d.Byte12914, pcA0);
-      StrCat(d.Byte12914, ".");
+      StrCat(d.Byte12914, TranslateLanguage("."));
       D4W = sw(pcA3->load - 10*D4W);
       pcA0 = (char *)TAG014af6(D4W, 0, 1);
       StrCat(d.Byte12914, pcA0);
-      StrCat(d.Byte12914, "/");
+      StrCat(d.Byte12914, TranslateLanguage("/"));
       D0L = MaxLoad(pcA3);
       D4W = sw((D0L+5)/10);
       pcA0 = (char *)TAG014af6(D4W, 1, 3);
@@ -2153,7 +2154,7 @@ i16 TAG016426(CHARDESC *pChar,i16 attrNum,i16 P3)
   {
     fprintf(GETFILE(TraceFile),
             "Tag016426(chIdx=%d,attrNum=%d,P3=%d) = %d\n",
-            pChar-d.CH16482,attrNum,P3,D0W);
+            (i32)(pChar-d.CH16482),attrNum,P3,D0W);
   };
   return D0W;
 }
@@ -2966,7 +2967,7 @@ void CHARDESC::SetPossession(int index, RN newObject, bool processFilter)
                 timerA.Level((ui8)equipFilterLocr.l);
   
                 pDSAparameters[0] = 4;
-                pDSAparameters[1] = this-d.CH16482;
+                pDSAparameters[1] = (i32)(this-d.CH16482);
                 pDSAparameters[2] = index;
                 pDSAparameters[4] = 0;
   
@@ -3318,6 +3319,7 @@ void DisplayScroll(DB7 *pDB7)
   dReg D1, D7;
   aReg A0, A2, A3;
   char b_260[1000];
+  const char *pText;
   i32 i;
   i32 numLinesInScroll = 0;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -3326,6 +3328,8 @@ void DisplayScroll(DB7 *pDB7)
              GetRecordAddressDB2(pDB7->text()),
              (ui16)0x8002,
              990);
+  pText = TranslateLanguage(b_260);
+  strcpy(b_260, pText);
   //Make sure there are TWO zeroes at the end!
   //This fixes the problem when there is only
   //one line of text.
@@ -3389,7 +3393,12 @@ class CUSTOMPHRASE
     CUSTOMPHRASE(void){m_address = NULL;};
     ~CUSTOMPHRASE(void){Clear();};
     void Clear(void){if(m_address!=NULL)UI_free(m_address);m_address=NULL;};
-    void Set(char *a){Clear();m_address=(char *)UI_malloc(strlen(a)+1,MALLOC091);strcpy(m_address,a);};
+    void Set(char *a)
+    {
+      Clear();
+      m_address=(char *)UI_malloc((i32)strlen(a)+1,MALLOC091);
+      strcpy(m_address,a);
+    };
     char *Get(void){return m_address;};
 };
 
@@ -3414,6 +3423,7 @@ void DescribeObject(RN object,i16 P2)
   dReg D0, D1, D4, D7;
   const char* A0;
   const char* A3;
+  bool finalTranslate = true;
   OBJ_NAME_INDEX objNID6;
   CHARDESC *pcA0;
   DB5 *DB5A0;
@@ -3567,8 +3577,11 @@ void DescribeObject(RN object,i16 P2)
             if (character.CopyCharacter(bonesRecord[0]))
             {
               pcA0 = &character;
-              StrCpy(descriptiveText, pcA0->name);
-              StrCat(descriptiveText, d.ObjectNames[objNID6]);
+              //StrCpy(descriptiveText, pcA0->name);
+              //StrCat(descriptiveText," ");
+              //StrCat(descriptiveText, TranslateLanguage(d.ObjectNames[objNID6]));
+              DescribeChampionBones(descriptiveText, pcA0->name, d.ObjectNames[objNID6]);
+              finalTranslate = false;
               A3 = descriptiveText;
             };
           };
@@ -3606,7 +3619,7 @@ void DescribeObject(RN object,i16 P2)
           descriptiveText[0] = sb(95 + dbA2->CastToDB8()->strength()/40);
           descriptiveText[1] = ' ';
           descriptiveText[2] = 0;
-          StrCat(descriptiveText, d.ObjectNames[objNID6]);
+          StrCat(descriptiveText, TranslateLanguage(d.ObjectNames[objNID6]));
           A3 = descriptiveText;
         }
         else
@@ -3614,7 +3627,7 @@ void DescribeObject(RN object,i16 P2)
           A3 = d.ObjectNames[objNID6];
         };
       };
-      TextToViewport(134, 68, COLOR_13, A3, false);
+      TextToViewport(134, 68, COLOR_13, A3, finalTranslate);
       DrawSmallIcon(objNID6, 111, 59);
       descriptivePhrases[2] = "CONSUMABLE";
       descriptivePhrases[3] = "POISONED";
@@ -3643,7 +3656,7 @@ void DescribeObject(RN object,i16 P2)
             D0W = sw(DB5A0->charges());
             if (D0W == 0)
             {
-              PrintItemDesc("(BURNT OUT)");
+              PrintItemDesc(TranslateLanguage("(BURNT OUT)"));
             };
           };
           break;
@@ -3684,7 +3697,7 @@ void DescribeObject(RN object,i16 P2)
               A3 = "(FULL)";
               break;
             }; //switch ()
-            PrintItemDesc(A3);
+            PrintItemDesc(TranslateLanguage(A3));
           }
           else
           {
@@ -3713,7 +3726,7 @@ void DescribeObject(RN object,i16 P2)
       D7W = sw(GetObjectWeight(object));
       A0 = TAG014af6((UI16)(D7W)/10, 0, 3);
       StrCat(descriptiveText, A0);
-      StrCat(descriptiveText, ".");
+      StrCat(descriptiveText, TranslateLanguage("."));
       D7W = sw((D7W&0xffff)%10);
       A0 = TAG014af6(D7W, 0, 1);
       StrCat(descriptiveText, A0);
@@ -4499,7 +4512,7 @@ RESTARTABLE _FeedCharacter(void)
 // *********************************************************
 //
 // *********************************************************
-void TAG019036(void)   // Click on eye with empty hand
+void TAG019036(void)
 {
   dReg D0, D4, D5, D6, D7;
   aReg A0;

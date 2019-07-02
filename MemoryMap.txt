@@ -1,0 +1,65 @@
+       |--------------------------------------------------|
+       |  Graphic Memory                                  |d.pStartMemory
+       |  Initially d.iAvailableGraphicMemory Bytes       |
+       |  No longer used.  We now use malloc to allocate  |
+       |     individual graphics.                         |
+       |--------------------------------------------------|
+       | 10000 Bytes - Heap (Actually a stack) for        |d.pStartOfAvailMemory
+       |               miscellaneous temporary allocation |
+       |                                                  |
+       |--------------------------------------------------|
+       |                                                  |d.pEndOfAvailMemory
+       | 2176 Bytes -                                     |d.Pointer2230
+       |--------------------------------------------------|
+       | 2176 Bytes -                                     |d.Pointer2226
+       |--------------------------------------------------|
+       | 14208 Bytes -                                    |d.Pointer2222
+       |--------------------------------------------------|
+       | 5112 Bytes -                                     |d.Pointer2218
+       |--------------------------------------------------|
+       | 3264 Bytes -                                     |d.Pointer2214
+       |--------------------------------------------------|
+       | 432 Bytes - Saved Pixels Under Cursor            |d.SavedCursorPixels
+       |--------------------------------------------------|
+       | 432 Bytes - Cursor Bitmap                        |d.CursorBitmap
+       |--------------------------------------------------|
+       | 256 Bytes                                        |d.Pointer23178
+       |--------------------------------------------------|
+       | 256 Bytes                                        |d.Pointer23182
+       |--------------------------------------------------|
+       | 288 Bytes                                        |d.Pointer23186
+       |--------------------------------------------------|
+       | 288 Bytes                                        |d.Pointer23190
+       |--------------------------------------------------|
+       | DecompressedSize(0x22c) + 199 Bytes              |
+       |    Object Names.  Indexed by d.ObjectNames[199]  |
+       |--------------------------------------------------|
+       | 128 Bytes                                        |d.Pointer16572
+       |--------------------------------------------------|
+       | 768 Bytes - Expanded Graphic[0x822d]             |d.Pointer12926
+       |--------------------------------------------------|
+       | 1120 Bytes -                                     |d.newTextLine
+       |--------------------------------------------------|
+       | ????? Bytes                                      |
+       | Ceiling, Floor, and Wall Bitmaps (see detail)    |
+       |--------------------------------------------------|
+       | Uncompressed Graphic[0]                          |d.Pointer11782
+       |--------------------------------------------------|
+       | 2*NumGraphic Bytes - Basic Graphics Index        |d.GraphicsIndex0
+       |--------------------------------------------------|
+       | 4*NumGraphic Bytes - Pointers                    |d.ppUnexpandedGraphics
+       |                        to Unexpanded Graphics    |
+       |--------------------------------------------------|
+       | 2*NumGraphic Bytes - Decompressed Graphic Sizes  |d.GraphicDecompressedSizes 
+       |--------------------------------------------------|
+       | 2*NumGraphic Bytes - Compressed Graphic Sizes    |d.GraphicCompressedSizes        
+       |--------------------------------------------------|
+       | 1460 Bytes - Derived Graphics Sizes              |d.pwDerivedGraphicSizes
+       |--------------------------------------------------|
+       | 1460 Bytes - Derived Graphics Indexes            |d.GraphicIndex8000
+       |--------------------------------------------------|
+       | 5100 Bytes - Expanded Graphics Pointers          |d.ppExpandedGraphics
+       |--------------------------------------------------|
+a497bc | 1024 Bytes - Disk Cluster Cache                  |d.ClusterCache
+       |--------------------------------------------------|
+a49bbc   First Byte beyond data memory                     d.Pointer23294

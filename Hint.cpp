@@ -37,9 +37,9 @@ typedef pnt aReg;
 //pnt& pntGear(pnt p);
 //#define wordGear(A) (*((i16 *)(A)))
 
-void StorePnt(pnt addr, pnt data);
-ui8 *LoadPnt(aReg addr);
-ui8 *LoadPnt(ui8 *addr);
+//void StorePnt(pnt addr, pnt data);
+//ui8 *LoadPnt(aReg addr);
+//ui8 *LoadPnt(ui8 *addr);
 i32 LoadLong(pnt addr);
 i32 LoadLong(i32 *addr){return LoadLong((pnt)addr);};
 void StoreLong(pnt addr, i32 data);
@@ -59,12 +59,93 @@ struct S6
   i16  w4;
 };
 
-struct S12 
+struct OBJECT_DEF    // Parameter to allocatMemory()
 {
-  i32   i0;
-  i16   w4;
-  i16   w6;
-  void  (*pnt8)(pnt);
+  i32   allocatedSize_0; //i0;
+  i16   memType_4;       // Bit 0 set means allocate starting from first heap
+                         //       else allocate starting from last heap
+                         // Note: We only have one heap!    
+  i16   objectPreambleSize_6; //w6;
+  void  (*callbackFunction_8)(pnt); // Called with the object's preamble as a parameter
+};
+
+class FILE_DESCRIPTOR
+{
+public:
+  i16  word0;
+  i16  fileHandle_2;  //word2
+  i16  word4;
+  i16  word6;
+  i16  word8;
+  char byte10[1]; //Don't know how big
+  //char xxbyte11[14-11];
+  char Fill11[16-11];
+  i32  long14;
+  i32  long18;
+  char byte22[1]; //Don't know how big. Error message?
+  char xxbyte23[82-23];
+  pnt  pointer82;
+  i32  long86;
+  //pnt  pointer90;
+  ui8  *bufferAddress_90;
+  //i32  long94;
+  i32  bufferSize_94;
+  char byte98[1]; //Don't know how big.
+  char xxbyte99[104-99];
+  //char byte104[1];//Don't know how big
+  char byte104[12];
+  //char xxbyte105[116-105];
+  //char Fill105[118-105];
+  char Fill116[118-116];  // Why is this 118 instead of 116?
+  i16  word116;
+  i16  word118;
+  i32  long120;
+};
+
+
+struct OBJECT_HANDLE
+{
+private:
+  void  **m_ppObject;
+public:
+  void  **GetPointer(){return m_ppObject;};
+public:
+  OBJECT_HANDLE(void){m_ppObject = NULL;};
+  OBJECT_HANDLE(void **ppObject){m_ppObject = ppObject;};
+  OBJECT_HANDLE(ui8 **ppObject){m_ppObject = (void **)ppObject;};
+  void operator =(void **p){m_ppObject = p;};
+  bool operator==(void ** ppObject){return m_ppObject == ppObject;};
+  void SetObjectAddress(void *pObject){*m_ppObject = pObject;};
+  void *GetObjectAddress(void){return *m_ppObject;};
+};
+
+
+struct FILE_DESCRIPTOR_HANDLE:public OBJECT_HANDLE
+{
+  FILE_DESCRIPTOR_HANDLE(void):OBJECT_HANDLE(){};
+  FILE_DESCRIPTOR_HANDLE(OBJECT_HANDLE src):OBJECT_HANDLE(src.GetPointer()){};
+  FILE_DESCRIPTOR *GetFileDescAddr(void){return (FILE_DESCRIPTOR *)(*GetPointer());};
+};
+
+struct IO_BUFFER_HANDLE:public OBJECT_HANDLE
+{
+  IO_BUFFER_HANDLE(void):OBJECT_HANDLE(){};
+  IO_BUFFER_HANDLE(OBJECT_HANDLE src):OBJECT_HANDLE(src.GetPointer()){};
+  char *GetIOBufferAddr(void){return (char *)(*GetPointer());}
+};
+
+struct OBJECT_HEADER
+{
+  ui32  memSize_0;   // Size of memory block
+  ui8   byte_4; // =0;
+  ui8   byte_5; // = memType & 7;
+  OBJECT_HANDLE objHandle_6;  // Handle of itself
+  ui16  memType_10;
+  //        preamble bytes
+  //    word = size of preamble
+  //        data bytes of the object itself
+  //    i32  = size of memory block = memSize_0
+  //
 };
 
 struct SS12
@@ -82,6 +163,19 @@ struct T12
   i16  w10;
 };
 
+struct HANDLE_LIST_HEADER_S16
+{
+  ui32 size;  // This memory block size....put here by Memory Allocater
+  i8  b4;
+  i8  b5;
+  HANDLE_LIST_HEADER_S16 *pNext_6;    // The next S16 in the chain
+  i16 maxNumHandles_10; //w10;
+  i16 numHandlesAllocated_12; //w12;
+  i16 startingSearchIndex_14; // w14; // Provision for optimisation???
+                                      // The search wraps.
+  // void *object[];
+};
+
 struct S20
 {
   i16  w0;
@@ -93,20 +187,47 @@ struct S20
   i16  w18;
 };
 
-struct S18
+struct MEMORY_BLOCK_HEADER
 {
-  pnt   pnt0;
-  i32   i6;
-  pnt   pnt10;
-  i32   i14;
-  i16   w4;
-  i16   unused;
+  ui32   usableSize;                  // size | 0x80000000 if unused
+  MEMORY_BLOCK_HEADER *pPrev;
+  MEMORY_BLOCK_HEADER *pNext;
+};
+
+struct MEMORY_BLOCK_TRAILER
+{
+  i32 usableSize;   // size | 0x80000000 if unused
+};
+
+struct MEMORY_S18
+{
+  MEMORY_BLOCK_HEADER *m_pFirstBlock_0; // initialized pointer to 300000 byte block of memory + sizeof(pointer)
+                      //
+                      // the first block of memory (firstBlock_0) is 
+                      // initialized to :
+                      //     #usable bytes  | 0x80000000
+                      //          Previous block in list of available blocks = NULL
+                      //          NextBlock in list = NULL
+                      //          usableBytes[size - 2 * sizeof(pointer)]
+                      //     #usable bytes  | 0x80000000
+                      //
+  i32   m_i6;         // initialized to size of firstBlock_0 (300000) - 2*sizeof(ui32)
+  MEMORY_BLOCK_HEADER  *m_pFirstAvailBlock_10; // initialized to pointer to first block (same as firstBlock_0)
+  i32   m_i14;        // initialized to same as i6.  (usable size of block)
+  i16   m_memType_4;  // initialized to 0x7f8 (2040)
+  i16   m_unused;
+
+  pnt  AllocateMemoryBlock(i32 requestedSize, i16 memoryType);
+  void AddMemoryBlock(MEMORY_BLOCK_HEADER *pPnewBlock, i32 size);
+  void UnlinkMemoryBlock(MEMORY_BLOCK_HEADER *pBlock);
+  void LinkNewBlock(MEMORY_BLOCK_HEADER *pNewBlock);
+  //void ChainUnusedBlock(UNUSED_MEMORY_BLOCK_HEADER *pBlockHeader);
 };
 
 struct TEXT
 {
   i16  w0;
-  char *pnt2;
+  const char *pnt2;
   wordRectPos rectPos6;
   i16  w14;
   i16  w16;
@@ -181,8 +302,9 @@ struct DATINDEX
 {
   i16   handle0;
   i16   numSeg2;
-  i32  *fileOffsets4;
+  i32  *pFileOffsets4;
 };
+
 
 struct F {
   pnt   Pointer16908;
@@ -190,8 +312,8 @@ struct F {
   pnt   Pointer16900;
   pnt   Pointer16506[2];//set to logbase()
   pnt   Pointer15794;
-  pnt   Pointer15080;
-  pnt   Pointer15076;
+  FILE_DESCRIPTOR_HANDLE hFileDescriptors_15080;
+  IO_BUFFER_HANDLE hIOBuffer_15076;
   BOOK *pBook14608[23]; //uses memory to 14516
   //i16   rectPos14516[4];(use rectPos14516)
   i16   (*Pointer14508)(i32, pnt, i16);
@@ -205,6 +327,7 @@ struct F {
   i32   Long12810;//disguised code pointer???
   DATINDEX *pDatIndex12802; //HCSB.DAT handle, numseg, offsets
   pnt   Pointer12798;
+  i32 fill12978;  // to align the following pnts.  A warning.
   pnt   Seg1Addr10550;
   pnt   Seg2Addr10546;
   pnt   Seg3Addr10542;
@@ -214,8 +337,10 @@ struct F {
   TEXT *pText10480;
   TEXT *pText10476;
   S4076 s4076_8816[2];
-  pnt   Pointer9710[100];
+  //pnt   Pointer9710[100];
+  OBJECT_HANDLE   Pointer9710[100];
   pnt   Pointer9310[100];  
+  //OBJECT_HANDLE   Pointer9310[100];  
   TEXT *Pointer652;
   i32   Long288[3];
   i16  *Pointer268;
@@ -225,23 +350,26 @@ struct F {
   i32  *Pointer252;
   pnt   Pointer248;
   i16   **Pointer244;
-  i16  *Pointer218;
-  pnt   Pointer214;
-  i16  *Pointer210;
-  i16  *Pointer206;
-  i16   (*Pointer184)(i16, i16);// initially MinA
-  i16   (*Pointer180)(i16, i16);// initially MinB
-  pnt   Pointer136;
-  pnt   Pointer132;
-  S18   s18_124[1];
+  i16        *Pointer218;
+  pnt         Pointer214;
+  i16        *Pointer210;
+  i16        *Pointer206;
+  i16       (*Pointer184)(i16, i16);// initially MinA
+  i16       (*Pointer180)(i16, i16);// initially MinB
+  pnt         pHeap_136;   // pointer to 300000 byte heap
+  //pnt                              Pointer132;  // Set to NULL by heap initialization
+  HANDLE_LIST_HEADER_S16  *handleList_132;  // First of a list of S16
+                           // This is a list of pointers to allocated memory blocks
+  MEMORY_S18  s18_124[1];
 
 // *************************************************
 
   i16   Word16914;
   i16   Word16912;
   i16   Word16910;
-  i8    Byte16896[1];
-  HINTFILL(16895,16888)
+  //ui16  Word16896[1];   
+  DATINDEX datIndex_16896;   
+  HINTFILL(16894,16888)
   //i32   VBLCnt16888; // (use VBLCount)
   i16   Segment1_16872[50];//First segment of HCBS
   //i32   Long16864; // part of Segment1_16872
@@ -279,7 +407,7 @@ struct F {
   i16   Word15696;
   i8    Byte15694;
   i16   Word15072;
-  i16   Word15070;
+  i16   numFileDescriptor_15070; //Word15070;
   i8    Byte15068[1];
   HINTFILL(15067,15046)
   i8    Byte15046[6];
@@ -376,7 +504,8 @@ struct F {
   i16   Word240;
   i16   Word194;
   i16   Word128;
-  i16   Word126;
+  i16   numHeap_126;  // Always = 1 inour little program
+                      // The S18_124[] structure describes each heap (one in this case)
 };
 
 F f;
@@ -470,7 +599,6 @@ char str15692_8[] =
         "Retry with a new saved game." ;
 
 
-
 TEXT text15024[9] ALIGN4 =
 {
   {3, str15692_0, 0x1f, 0x122, 0x32, 0x96, 1, 0, 0, 0},
@@ -483,6 +611,22 @@ TEXT text15024[9] ALIGN4 =
   {3, str15692_7, 0x1f, 0x122, 0x46, 0x96, 1, 0, 0, 0},
   {3, str15692_8, 0x1f, 0x122, 0x46, 0x96, 1, 0, 0, 0}
 };
+
+void DoTranslate(void)
+{
+  int i;
+  for (i=0; i<9; i++)
+  {
+    text15024[i].pnt2 = TranslateLanguage(text15024[i].pnt2);
+  };
+  for (i=0; s20_16208[i].w0!= 0; i++)
+  {
+     if (s20_16208[i].pnt14 != NULL)
+     {
+       s20_16208[i].pnt14 = TranslateLanguage(s20_16208[i].pnt14);
+     };
+  }
+}
 
 TEXT *(pText16272[]) =
 {
@@ -517,12 +661,6 @@ i16 word14204 = 0;
 i16 word14202 = 4;
 i16 word14200 = 1;
 
-pnt pointer14154[6] = {NULL,NULL,NULL,NULL,NULL,NULL};
-pnt *pointer14130 = pointer14154;
-i16 word14126[7] = {0x4737,0x4838,0x4b34,0x4d36,0x5032,0x5230,0x532e};
-
-T12 t12_14106[12];
-
 struct CLICKMAP
 {
   i8   b0;
@@ -531,6 +669,16 @@ struct CLICKMAP
   pnt  *pPnt6;
   pnt  p10;
 };
+
+
+//pnt pointer14154[6] = {NULL,NULL,NULL,NULL,NULL,NULL};
+CLICKMAP *pointer14154[6] = {NULL,NULL,NULL,NULL,NULL,NULL};
+//pnt *pointer14130 = pointer14154;
+CLICKMAP **pointer14130 = pointer14154;
+i16 word14126[7] = {0x4737,0x4838,0x4b34,0x4d36,0x5032,0x5230,0x532e};
+
+T12 t12_14106[12];
+
 
 CLICKMAP clickMap13914 = {0x0a,0x00,t12_14106,f.Pointer13962,NULL};
 
@@ -575,8 +723,9 @@ pnt  GETDTA(void);
 void SETDTA(pnt);
 i16  drvmap(void); //Bios function TRAP #13
 void StrCpy(char *dst, const char *src);//TAG003264
-i32  atari_sprintf(char *,const char*, i32, i32=0, i32=0);//TAG0065e0
-void MemoryMove(ui8 *src, ui8 *dst, i16, i16, i32);//like MemMove
+//i32  atari_sprintf(char *,const char*, i32, i32=0, i32=0);//TAG0065e0
+i32  atari_sprintf(char *,const char*, const intptr_t, const intptr_t=0, const intptr_t=0);//TAG0065e0
+void MemoryMove(void *src, void *dst, i16, i16, i32);//like MemMove
 ui8 *physbase(void);
 ui8 *logbase(void);
 void setscreen(ui8 *logaddr, ui8 *physaddr, i16 res);
@@ -602,48 +751,25 @@ i16  Unscramble(ui8 *buf, i32 initialChecksum, i32 numword);
 void   ExpandRectangle(wordRectPos *, wordRectPos *, i16, i16);
 
 
-class FILE_DESCRIPTOR
-{
-public:
-  i16  word0;
-  i16  fileHandle;  //word2
-  i16  word4;
-  i16  word6;
-  i16  word8;
-  char byte10[1]; //Don't know how big
-  char xxbyte11[14-11];
-  i32  long14;
-  i32  long18;
-  char byte22[1]; //Don't know how big. Error message?
-  char xxbyte23[82-23];
-  pnt  pointer82;
-  i32  long86;
-  pnt  pointer90;
-  i32  long94;
-  char byte98[1]; //Don't know how big.
-  char xxbyte99[104-99];
-  char byte104[1];//Don't know how big
-  char xxbyte105[116-105];
-  i16  word116;
-  i16  word118;
-  i32  long120;
-};
 
 FILE_DESCRIPTOR *FindFileDescriptor(i32 FDnum);//TAG000450(i32);
 i32   TAG0004b6(i32, FILE_DESCRIPTOR *);//TAG0004b6(i32, pnt);
 i32   TAG000606(i16, i16, i16);
-void  TAG000678(pnt, pnt, i32);
+//void  TAG000678(pnt, pnt, i32);
+void  StrCopyAndFill(pnt, pnt, i32);
 i16   TAG0006bc(pnt, pnt, i16);
-void  TAG0006f8(FILE_DESCRIPTOR *, i16, i16);//TAG0006f8(pnt, i16, i16);
+//void  TAG0006f8(FILE_DESCRIPTOR *, i16, i16);//TAG0006f8(pnt, i16, i16);
+void  CheckFileDescValid(FILE_DESCRIPTOR *, i16, i16);//TAG0006f8(pnt, i16, i16);
 i16   GetAvailFloppyMap(void);//TAG00073c
 i32   TAG000784(i16, i32 *);
 i32   TAG0008c4(FILE_DESCRIPTOR *pFD);//TAG0008c4(pnt);
 i16   TAG000956(FILE_DESCRIPTOR *);//TAG000956(pnt);
 i32   TAG000b46(i16, FILE_DESCRIPTOR *pFD);//TAG000b46(i16, pnt);
 i32   OpenHelpFile(FILE_DESCRIPTOR *pFD);//TAG000bd2(pnt);
-void  TAG000f50(i16);
+void  InitializeFileDescriptors(i16);
 void  TAG001006(void);
-i16   TAG00101c(void);
+//i16   TAG00101c(void);
+i16   FindUnusedFileDescriptor(void);
 void  TAG001064(i16);
 i32   TAG001096_2(i16);
 i32   ReadFile(i16);//TAG001096_7
@@ -660,7 +786,8 @@ i32   TAG00181e(i16);
 i16   TAG001840(i32, pnt, i16);
 void  TAG00187e(void);
 i32   TAG001896(void);
-i32   TAG00189c(i16, i32, const char*);
+//i32   TAG00189c(i16, i32, const char*);
+i32   ErrorCondition(i16, i32, uintptr_t);
 i16   TAG001964(i16, i32, i32, i32 (*)(i32, pnt));
 i16   TAG001a32(pnt, i16, i16);
 void  ClearKeyboard(void);//TAG001a6a
@@ -683,7 +810,9 @@ void  TAG002b3c(i16, i16);
 void  TAG002b5c(i16, i16);
 void  TAG002bf4(void);
 void  TAG002c1a(void);
-i32   TAG002c5e(pnt P1,pnt P2,pnt P3);
+//i32   TAG002c5e(pnt P1,pnt P2,pnt P3);
+//i32   TAG002c5e(pnt P1,ui16 *P2,pnt P3);
+i32   TAG002c5e(pnt P1,DATINDEX *P2,pnt P3);
 void  TAG002e64(void);
 i32   ReadDatSeg(pnt, i16);//TAG002eb8
 i32   TAG002f6c(ui8 *P1, i16 P2, i16 P3, i16 P4);
@@ -695,41 +824,54 @@ i32   TAG003210(i16 handle,   // @8
                 pnt rsltAddr, // @14
                 pnt tmpBuf1,  // @18
                 pnt tmpBuf2); // @22
-void  TAG00339e(wordRectPos *, i16);
+void         TAG00339e(wordRectPos *, i16);
 //void  TAG003444(i16 *, pnt); StrCpy
-i16   StrLen(const char *);//TAG0034a2
+i16          StrLen(const char *);//TAG0034a2
 //void  TAG0034c6(pnt, pnt, pnt);//(Use TAG0065e0)
-pnt   TAG0035e6(pnt);
-S18  *TAG00360a(pnt);
-void  TAG00364c(pnt, S18 *);
-void  TAG003682(pnt, S18 *);
-void  TAG0036e4(pnt, i32, S18 *);
-void  TAG003720(pnt, i32, S18 *);
-pnt   TAG003788(i32, S18 *, i16 *);
-i16   TAG003b3a(S18 *, i32);
-pnt   TAG003c50(i16);
-pnt   TAG003cf6(pnt *);
-pnt   TAG003f82(S12 *);
-void  TAG003d9e(pnt);
-S18  *TAG003df0(S12 *);
-pnt   TAG003efc(i32, i16, S18 *);
-void  TAG00404c(pnt, S18 *);
-i16   TAG004078(i16, i16);
-void  TAG00418a(void);
-pnt   TAG00419a(i32, i16);
-i32   TAG0041c8(pnt);
-pnt   TAG00421e(pnt);
-void  TAG004254(pnt);
-i32   TAG004316(pnt);
+//pnt          TAG0035e6(pnt);
+OBJECT_HEADER  *LocateObjectHeader(OBJECT_HANDLE);
+//MEMORY_S18  *TAG00360a(pnt);
+MEMORY_S18  *LocateMemoryHeap(pnt);
+//void         UnlinkMemoryBlock(pnt, MEMORY_S18 *);
+void         LinkMemoryBlock(pnt, MEMORY_S18 *);
+void         AddMemoryBlock(MEMORY_BLOCK_HEADER *, i32, MEMORY_S18 *);
+void         TAG003720(pnt, i32, MEMORY_S18 *);
+MEMORY_BLOCK_HEADER *FindSuitableBlock(i32, MEMORY_S18 *, i16 *);
+i16          TAG003b3a(MEMORY_S18 *, i32);
+//ui8 *        TAG003c50(i16);
+HANDLE_LIST_HEADER_S16  *NewHandleBlock(i16);
+//pnt          TAG003cf6(pnt *);
+OBJECT_HANDLE  NewObjectHandle(HANDLE_LIST_HEADER_S16 **);
+//pnt          TAG003f82(MEMORY_REQUEST_S12 *);
+//pnt          NewObject(OBJECT_DEF *);
+OBJECT_HANDLE  NewObject(OBJECT_DEF *);
+void         TAG003d9e(pnt);
+//MEMORY_S18  *TAG003df0(S12 *);
+MEMORY_S18  *FindSuitableHeap(OBJECT_DEF *);
+//pnt          AllocateMemoryBlock(i32, i16, MEMORY_S18 *);
+void         TAG00404c(pnt, MEMORY_S18 *);
+i16          AllocateHeap(i16, i16); //TAG004078(i16, i16);
+void         TAG00418a(void);
+//pnt          TAG00419a(i32, i16);
+OBJECT_HANDLE  TAG00419a(i32, i16);
+//i32          TAG0041c8(pnt);
+i32          TAG0041c8(OBJECT_HANDLE);
+//pnt          TAG00421e(pnt);
+pnt          TAG00421e(OBJECT_HANDLE);
+void         TAG004254(pnt);
+//i32          TAG004316(pnt);
+i32          TAG004316(OBJECT_HANDLE);
 //void  TAG0047c2(pnt, pnt, i16, i16, i32);//MemoryMovevoid  y
-void  ClearMemory(ui8 *dest, i32 numByte); // TAG0048de(i32 *, i32);
-void  TAG004962(i16, i16, pnt);
-i32   TAG0049fe(TEXT *,i32,i32);
-pnt   TAG004a22_14(i16 P1);
-pnt   TAG004a22_16(i16 P1, i32 nP2);
+void         ClearMemory(ui8 *dest, i32 numByte); // TAG0048de(i32 *, i32);
+void         TAG004962(i16, i16, pnt);
+i32          TAG0049fe(TEXT *,i32,i32);
+//pnt          TAG004a22_14(i16 P1);
+TEXT         *TAG004a22_14(i16 P1);
+//pnt   TAG004a22_16(i16 P1, uintptr_t nP2);
+TEXT *TAG004a22_16(i16 P1, uintptr_t nP2);
 //   TAG004a22_20
 void  Free_TEXT(i16 P1, TEXT *nP2);
-void  TAG004a22_26(i16 /*P1*/, i32 nP2, i32 nP3);
+void  TAG004a22_26(i16 /*P1*/, uintptr_t nP2, i32 nP3);
 pnt   TAG004f3a_1(i16 /*P1*/);
 void  TAG004f3a_2(i16 /*P1*/);
 pnt   AssignMemory(i16 /*P1*/, i32 nP2);//TAG004f3a_14
@@ -776,43 +918,47 @@ void  TAG0076a0_40(i32 /*P1*/, i32 nP2, const char* nP3, i32 nP4);
 void  TAG0078fa(TEXT *);
 i32   TAG007908(i32, pnt);
 i16   TAG00794e(pnt, pnt);
-void  TAG00797a(void);
-void  TAG00799a_1(i16 /*P1*/);
-void  TAG00799a_2(i16 /*P1*/);
-void  SetSelectedLine(i16 /*P1*/, i32 nP2);//TAG00799a_7
-i32   TAG00799a_13(i16 P1);
-void  TAG007fbc(void);
-void  TAG007fdc_2(i16 P1);
-i32   TAG00835c_25(i16 P1);
-void  TAG0083ac(i16, i16, i16, i16, i16);
-i16   TAG0083cc(pnt, pnt); //Adds words between two addresses
-void  TAG008898(i16, i16);
-void  TAG0088b8(wordRectPos *, ui8 *, i16);
-void  TAG008a42(void);
-i32   TAG008a62(void);
-void  TAG008b90(i16,S20 *,T12 *);
-void  TAG008c20(void);
-void  TAG008c40_1(i16 P1);
-void  TAG008c40_2(i16 /*P1*/);
-void  TAG008c40_3(i16 P1, i32 nP2, i32 nP3);
-i32   TAG008c40_12(i16 /*P1*/, i32 nP2, i32 nP3, pnt nP4);
-void  TAG008c40_30(i16 /*P1*/);
-void  TAG0093a0_17(i16,i32);
-void  TAG0093a0_18(i32 , i32);
-void  Clear_14608(void);//TAG009462
-i32   TAG00948c(i16 P1);
-pnt   TAG0094de(i16 P1, PAGE *P2, NODE *P3);
-i32   AddPage(i16 P1, PAGE *P2);//TAG009516
-i16   PageCount(i16);//TAG00958a
-pnt   TAG0095b0(i32 P1, i32 P2);
-pnt   TAG00964e(i32 P1, i32 P2);
-void  TAG00978a_1(i16 /*P1*/);
-void  TAG00978a_3(i16 P1, PAGE *nP2);
-pnt   TAG00978a_12(i16 P1, i32 nP2);
-i32   TAG00978a_13(i16 P1);
-pnt   TAG00978a_21(i16 P1, i32 nP2);
-void  TAG00978a_27(i16 P1, i32 nP2, pnt nP3, i32 nP4);
-pnt   TAG00978a_28(i16 P1,i16 nP2,i16 nP3);
+void      TAG00797a(void);
+void      TAG00799a_1(i16 /*P1*/);
+void      TAG00799a_2(i16 /*P1*/);
+void      SetSelectedLine(i16 /*P1*/, i32 nP2);//TAG00799a_7
+i32       TAG00799a_13(i16 P1);
+void      TAG007fbc(void);
+void      TAG007fdc_2(i16 P1);
+i32       TAG00835c_25(i16 P1);
+void      TAG0083ac(i16, i16, i16, i16, i16);
+i16       TAG0083cc(pnt, pnt); //Adds words between two addresses
+void      TAG008898(i16, i16);
+void      TAG0088b8(wordRectPos *, ui8 *, i16);
+void      TAG008a42(void);
+i32       TAG008a62(void);
+void      TAG008b90(i16,S20 *,T12 *);
+void      TAG008c20(void);
+void      TAG008c40_1(i16 P1);
+void      TAG008c40_2(i16 /*P1*/);
+void      TAG008c40_3(i16 P1, i32 nP2, i32 nP3);
+//i32     TAG008c40_12(i16 /*P1*/, i32 nP2, i32 nP3, pnt nP4);
+uintptr_t TAG008c40_12(i16 /*P1*/, i32 nP2, i32 nP3, pnt nP4);
+void      TAG008c40_30(i16 /*P1*/);
+void      TAG0093a0_17(i16,i32);
+//void    TAG0093a0_18(i32 , i32);
+void      TAG0093a0_18(i32 , uintptr_t);
+void      Clear_14608(void);//TAG009462
+i32       TAG00948c(i16 P1);
+pnt       TAG0094de(i16 P1, PAGE *P2, NODE *P3);
+i32       AddPage(i16 P1, PAGE *P2);//TAG009516
+i16       PageCount(i16);//TAG00958a
+pnt       TAG0095b0(i32 P1, i32 P2);
+//pnt       TAG00964e(i32 P1, i32 P2);
+PAGE      *TAG00964e(i32 P1, i32 P2);
+void      TAG00978a_1(i16 /*P1*/);
+void      TAG00978a_3(i16 P1, PAGE *nP2);
+pnt       TAG00978a_12(i16 P1, i32 nP2);
+i32       TAG00978a_13(i16 P1);
+//pnt       TAG00978a_21(i16 P1, i32 nP2);
+PAGE     *TAG00978a_21(i16 P1, i32 nP2);
+void      TAG00978a_27(i16 P1, i32 nP2, pnt nP3, i32 nP4);
+pnt       TAG00978a_28(i16 P1,i16 nP2,i16 nP3);
 void  TAG00978a_29(i16 P1, i16 nP2);
 void  TAG009d7e(i16, i16 *, i16 *, i16 *);
 //void  TAG009a02(i32, i32);
@@ -820,8 +966,10 @@ void  TAG009d7e(i16, i16 *, i16 *, i16 *);
 void  TAG009a40(void);
 void  TAG009d36(i16, i16);
 void  TAG009d5e(i16);
-void  TAG009db6(i16, i32, i32 *);
-void  TAG009dea(i16, i32, i32 *);
+//void  TAG009db6(i16, i32, i32 *);
+void  TAG009db6(i16, uintptr_t, i32 *);
+//void  TAG009dea(i16, i32, i32 *);
+void  TAG009dea(i16, uintptr_t, i32 *);
 void  TAG009ea0(i16 *, i16 *, i16 *);
 void  TAG009f1c(i16 *, i16 *, i16 *);
 void  TAG009f80(i16);
@@ -831,7 +979,7 @@ i16   TAG00a238(void);
 i16   TAG00a28c(void);
 i16   TAG00aa22(i16 *, i16 *, i16 *, i16 *);
 void  TAG00aa58(i16, i32);
-void  TAG00adf4(i32);
+void  TAG00adf4(uintptr_t);
 void  TAG00ae38(i32 *);
 void  TAG00ae58(void);
 //pnt   TAG00aeda(i16, i16); TRAP #1
@@ -866,22 +1014,34 @@ void SFIRST(pnt /*mask*/, i32 /*flg*/)
 //  TAG000450
 FILE_DESCRIPTOR *FindFileDescriptor(i32 FDnum)
 {
-  FILE_DESCRIPTOR *A4;
+  FILE_DESCRIPTOR *pFileDesc_A4;
 //
-  if ( (FDnum < 0) || (FDnum >= f.Word15070) )
+  if ( (FDnum < 0) || (FDnum >= f.numFileDescriptor_15070) )
   {
-    TAG00189c(1, 0x0106000e, (char *)FDnum);
+//#ifdef imp189c
+    //TAG00189c(1, 0x0106000e, (char *)FDnum);
+    ErrorCondition(1, 0x0106000e, (uintptr_t)FDnum);
+//#else
+//    NotImplemented(0x189c);
+//#endif
   };
-  A4 = (FILE_DESCRIPTOR *)LoadPnt(f.Pointer15080);
+//#ifdef impFindFileDescriptor
+  //A4 = (FILE_DESCRIPTOR *)LoadPnt(f.Pointer15080);
+  pFileDesc_A4 = f.hFileDescriptors_15080.GetFileDescAddr();
   //A4 += 124 * FDnum;
-  ASSERT(sizeof(*A4) == 124,"A4");
-  A4 += FDnum;
+  //ASSERT(sizeof(*A4) == 124,"A4");
+  pFileDesc_A4 += FDnum;
   //if (wordGear(A4+4) == 0)
-  if (A4->word4 == 0)
+  if (pFileDesc_A4->word4 == 0)
   {
-    TAG00189c(1, 0x0106000e, (char *)FDnum);
+    //TAG00189c(1, 0x0106000e, (char *)FDnum);
+    ErrorCondition(1, 0x0106000e, (uintptr_t)FDnum);
   };
-  return A4;
+  return pFileDesc_A4;
+//#else
+//  NotImplemented(0xffd00);
+//  return NULL;
+//#endif
 }
 
 // *********************************************************
@@ -913,7 +1073,7 @@ i32 TAG0004b6(i32 P1, FILE_DESCRIPTOR *P2)
       break;
   case 0x01060007:
       //if (wordGear(A4+2) == -1)
-      if (A4->fileHandle == -1)
+      if (A4->fileHandle_2 == -1)
       {
         //StrCpy(A4+22, "A read error occurred on %s");
         StrCpy(A4->byte22, "A read error occurred on %s");
@@ -922,7 +1082,8 @@ i32 TAG0004b6(i32 P1, FILE_DESCRIPTOR *P2)
       {
         atari_sprintf((char *)A4->byte22, 
                       "A read error occurred on file %s in %%s",
-                      (i32)LoadPnt((ui8 *)&A4->pointer82));
+                      //(i32)LoadPnt((ui8 *)&A4->pointer82));
+                      (uintptr_t)A4->pointer82);
       };
       break;
   case 0x01060008:
@@ -949,12 +1110,14 @@ i32 TAG0004b6(i32 P1, FILE_DESCRIPTOR *P2)
       atari_sprintf(
               (char *)A4->byte22, 
               "IO Error occured on %%s in %s", 
-              (i32)A4->byte10,
+              //(i32)A4->byte10,
+              (uintptr_t)A4->byte10,
               0);
       break;
   }; //switch
   //TAG00189c(0, D7L, (pnt)(UI16)(wordGear(A4)));
-  TAG00189c(0, D7L, (char *)((int)(A4->word0)));
+  //TAG00189c(0, D7L, (char *)((int)(A4->word0)));
+  ErrorCondition(0, D7L, (uintptr_t)A4->word0);
   return D7L;
 }
 
@@ -981,7 +1144,8 @@ i32 TAG000606(i16 P1, i16 P2, i16 P3)
 // *********************************************************
 //
 // *********************************************************
-void TAG000678(pnt src, pnt dst, i32 P3)
+//void TAG000678(pnt src, pnt dst, i32 P3)
+void StrCopyAndFill(pnt src, pnt dst, i32 P3)
 {
   dReg D6, D7;
   aReg A3, A4;
@@ -1011,20 +1175,23 @@ i16 TAG0006bc(pnt,pnt,i16)
 // *********************************************************
 //
 // *********************************************************
-void TAG0006f8(FILE_DESCRIPTOR *P1, i16 P2, i16 P3)
+void CheckFileDescValid(FILE_DESCRIPTOR *pFileDesc, i16 P2, i16 P3)
 {
-  dReg D6, D7;
-  FILE_DESCRIPTOR *A4;
-  A4 = P1;
-  D7W = P2;
-  D6W = P3;
+  //dReg D6, D7;
+  //FILE_DESCRIPTOR *A4;
+  //A4 = P1;
+  //D7W = P2;
+  //D6W = P3;
 //
   //if (  ((wordGear(A4+6) & D7W)==0)
   //    ||((wordGear(A4+6) & D6W)!=D6W) )
-  if (  ((A4->word6 & D7W)==0)
-      ||((A4->word6 & D6W)!=D6W) )
+  //if (  ((A4->word6 & D7W)==0)
+  if (  ((pFileDesc->word6 & P2) == 0)
+  //    ||((A4->word6 & D6W)!=D6W) )
+      ||((pFileDesc->word6 & P3) != P3) )
   {
-    TAG00189c(1, 0x01060005, (char *)A4);
+    //TAG00189c(1, 0x01060005, (char *)A4);
+    ErrorCondition(1, 0x01060005, (uintptr_t)pFileDesc);
   };
 }
 
@@ -1053,30 +1220,35 @@ i16 GetAvailFloppyMap(void)
 // *********************************************************
 i32 TAG000784(i16 P1, i32 *P2)
 {
+//#ifdef imp0784
   dReg D0, D1, D7;
-  aReg A0, A4;
+  //aReg A0, A4;
+  IO_BUFFER_HANDLE hIOBuffer_A0;
+  char *pIOBuffer_A4;
   pnt pnt_8;
   D7L = 0;
-  A0 = f.Pointer15076;
-  A4 = (aReg)LoadPnt(A0);
+  //A0 = f.Pointer15076;
+  hIOBuffer_A0 = f.hIOBuffer_15076;
+  //A4 = (aReg)LoadPnt(A0);
+  pIOBuffer_A4 = hIOBuffer_A0.GetIOBufferAddr();
   pnt_8 = GETDTA();
-  SETDTA(A4);
+  SETDTA((pnt)pIOBuffer_A4);
   StrCpy((char *)f.Byte15068, pointer15024[P1-1]);
   StrCpy((char *)f.Byte15068, "*.*");
   SFIRST(f.Byte15068, 8);
-  TAG000678(A4+30, f.Byte15068, 12);//Get volume label
+  StrCopyAndFill((pnt)pIOBuffer_A4+30, f.Byte15068, 12);//Get volume label
   SETDTA(pnt_8);
   if (P1 < 3)
   {
     D0L = 0;
     if (D0L == 0)
     {
-      TAG000678(A4+2, f.Byte15046, 6);
-      D0L = (UI8)(A4[8]);
+      StrCopyAndFill((pnt)pIOBuffer_A4+2, f.Byte15046, 6);
+      D0L = (UI8)(pIOBuffer_A4[8]);
       D0L <<= 16;
-      D1L = (UI8)(A4[9]);
+      D1L = (UI8)(pIOBuffer_A4[9]);
       D0L = D0L | (D1L<<8);
-      D1L = (UI8)(A4[10]);
+      D1L = (UI8)(pIOBuffer_A4[10]);
       D0L = 0;
       *P2 = D0L;      
       return D7L;
@@ -1090,6 +1262,10 @@ i32 TAG000784(i16 P1, i32 *P2)
 */
   };
   return D7L;
+//#else
+//  NotImplemented(0x0784);
+//  return 0;
+//#endif
 }
 
 // *********************************************************
@@ -1140,36 +1316,36 @@ i32 TAG0008c4(FILE_DESCRIPTOR *P1)
 i16 TAG000956(FILE_DESCRIPTOR *P1)
 {
   dReg D0, D7;
-  FILE_DESCRIPTOR *A4;
+  FILE_DESCRIPTOR *pFileDesc_A4;
   i32 i_4 = 0x1baddade;
   D7L = 0x1baddade;
-  A4 = P1;
+  pFileDesc_A4 = P1;
   //if (wordGear(A4+6) & 0x8000)
-  if (A4->word6 & 0x8000)
+  if (pFileDesc_A4->word6 & 0x8000)
   {
     do
     {
-      if (A4->word6 & 0x100)
+      if (pFileDesc_A4->word6 & 0x100)
       {
-        TAG000784(A4->word8, &i_4);
+        TAG000784(pFileDesc_A4->word8, &i_4);
         D0L = 0;
         //if (D0L != 0) goto tag000ca
 //
         //if (    ((wordGear(A4+6) & 0x200) == 0)
         //     || (LoadLong(A4+120) == i_4)  )
-        if (    ((A4->word6 & 0x200) == 0)
-             || (LoadLong(&A4->long120) == i_4)  )
+        if (    ((pFileDesc_A4->word6 & 0x200) == 0)
+             || (LoadLong(&pFileDesc_A4->long120) == i_4)  )
         {
 
           //if (    ((wordGear(A4+6) & 0x20) == 0)
           //     || (TAG0006bc(f.Byte15046, A4+98, 6) != 0)  )
-          if (    ((A4->word6 & 0x20) == 0)
-               || (TAG0006bc(f.Byte15046, (pnt)A4->byte98, 6) != 0)  )
+          if (    ((pFileDesc_A4->word6 & 0x20) == 0)
+               || (TAG0006bc(f.Byte15046, (pnt)pFileDesc_A4->byte98, 6) != 0)  )
           {
-            if (A4->word6 & 0x40)
+            if (pFileDesc_A4->word6 & 0x40)
             {
               //D0W = TAG0006bc(f.Byte15068, A4+104, 12);
-              D0W = TAG0006bc(f.Byte15068, (pnt)A4->byte104, 12);
+              D0W = TAG0006bc(f.Byte15068, (pnt)pFileDesc_A4->byte104, 12);
               if (D0W != 0) D7L = 0;
               else D7L = 0x0106000c;
             }
@@ -1198,24 +1374,25 @@ i16 TAG000956(FILE_DESCRIPTOR *P1)
       if (    (D7L == 0x0106000c)
          || (D7L == 0x01060004)  )
       {
-        D7L = TAG0004b6(D7L, A4);
+        D7L = TAG0004b6(D7L, pFileDesc_A4);
       }
       else
       {
         if (D7L == 0)
         {
-          TAG000678(f.Byte15068, (pnt)A4->byte104, 12);
-          TAG000678(f.Byte15046, (pnt)A4->byte98, 6);
-          StoreLong(&A4->long120, i_4);
-          A4->word6 |= 0x03e0;
-          A4->word6 &= 0x7fff;
+          StrCopyAndFill(f.Byte15068, (pnt)pFileDesc_A4->byte104, 12);
+          StrCopyAndFill(f.Byte15046, (pnt)pFileDesc_A4->byte98, 6);
+          //StoreLong(&pFileDesc_A4->long120, i_4);
+          pFileDesc_A4->long120 = i_4;
+          pFileDesc_A4->word6 |= 0x03e0;
+          pFileDesc_A4->word6 &= 0x7fff;
         };
       };
     } while (D7L == 0x0102fffe);
   }
   else
   {
-    D7L = TAG0008c4(A4);
+    D7L = TAG0008c4(pFileDesc_A4);
   };
   return D7W;
 }
@@ -1227,14 +1404,16 @@ i16 TAG000956(FILE_DESCRIPTOR *P1)
 i32 OpenHelpFile(FILE_DESCRIPTOR *P1) 
 {
   dReg D0, D6, D7;
-  TAG0006f8(P1, 992, 2);
+  CheckFileDescValid(P1, 992, 2);
   D7L = TAG000956(P1);
+//#ifdef impOHF
   if (D7W == 0)
   {
     //StrCpy(f.Byte15068, P1+10);
     StrCpy((char *)f.Byte15068, P1->byte10);
     //StrCpy(f.Byte15068, LoadPnt(P1+82));
-    StrCpy((char *)f.Byte15068, (char *)LoadPnt((ui8 *)&P1->pointer82));
+    //StrCpy((char *)f.Byte15068, (char *)LoadPnt((ui8 *)&P1->pointer82));
+    StrCpy((char *)f.Byte15068, (char *)P1->pointer82);
     if (P1->word4 == 2)
     {
       D6W = OPEN((char *)f.Byte15068, "rb");
@@ -1246,10 +1425,14 @@ i32 OpenHelpFile(FILE_DESCRIPTOR *P1)
     TAG000b46(D6W, P1);
     D0L = 0;
     //D6W = 6;//What was this for?  Maybe TOS assigns handle 6?
-    P1->fileHandle = D6W;
+    P1->fileHandle_2 = D6W;
   };
   P1->word4 = 2;  
   return 0;
+//#else
+//  NotImplemented(0x09fd);
+//  return 0;
+//#endif
 }
 
 // *********************************************************
@@ -1295,37 +1478,59 @@ i32 TAG000b46(i16 P1, FILE_DESCRIPTOR *P2)
 // *********************************************************
 //
 // *********************************************************
-void TAG000f50(i16 P1)
+//void TAG000f50(i16 P1)
+void InitializeFileDescriptors(i16 numFileDescriptor)
 {
-  dReg D0, D6, D7;
-  aReg A3;
-  FILE_DESCRIPTOR *A4;
+//#ifdef imp0f50
+  //dReg D0, D6, D7;
+  dReg D0, D6;
+  //aReg A3;
+  FILE_DESCRIPTOR_HANDLE hFileDescriptor_A3;
+  IO_BUFFER_HANDLE hIOBuffer_A3;
+  //FILE_DESCRIPTOR *A4;
+  FILE_DESCRIPTOR *pFileDesc_A4;
   pnt  pnt_4;
-  D7W = P1;
+  //D7W = P1;
   pnt_4 = NULL;
-  D0L = (UI16)(D7W);
-  D0L = 124 * D0L;
-  A3 = TAG00419a(D0L, 1025);
-  if (A3 == NULL)
+  //D0L = (UI16)(D7W);
+  //D0L = 124 * D0L;
+  D0L = sizeof(FILE_DESCRIPTOR) * numFileDescriptor;
+//#ifdef imp0f50
+  hFileDescriptor_A3 = (FILE_DESCRIPTOR_HANDLE)TAG00419a(D0L, 1025);
+//#else
+//  TAG00419a(D0L, 1025);
+//  NotImplemented(0x0f50);
+//#endif
+//#ifdef imp654
+  if (hFileDescriptor_A3 == NULL)
   {
-    TAG00189c(1, 0x1060010, "No mem for IORequests");
+    ErrorCondition(1, 0x1060010, (uintptr_t)"No mem for IORequests");
   };
-  f.Pointer15080 = A3;
-  A3 = TAG00419a(1024, 129);
-  if (A3 == NULL)
+  //f.Pointer15080 = A3;
+  f.hFileDescriptors_15080 = hFileDescriptor_A3;
+  hIOBuffer_A3 = TAG00419a(1024, 129);
+  if (hIOBuffer_A3 == NULL)
   {
-    TAG00189c(1, 0x01060010, "No mem for IO buffer");
+    ErrorCondition(1, 0x01060010, (uintptr_t)"No mem for IO buffer");
   };
-  f.Pointer15076 = A3;
+  f.hIOBuffer_15076 = hIOBuffer_A3;
+//#else
+//  NotImplemented(0x654);
+//#endif
   f.Word15072 = 0;
-  f.Word15070 = D7W;
-  A4 = (FILE_DESCRIPTOR *)LoadPnt(f.Pointer15080);
-  for (D6L=0; D6W < D7W; D6W++)
+  f.numFileDescriptor_15070 = numFileDescriptor;
+//#ifdef imp0f50
+  //A4 = (FILE_DESCRIPTOR *)LoadPnt(f.Pointer15080);
+  pFileDesc_A4 = f.hFileDescriptors_15080.GetFileDescAddr();
+//#else
+//  NotImplemented(0x0f50);
+//#endif
+  for (D6L=0; D6W < numFileDescriptor; D6W++)
   {
-    A4->word0 = D6W;
-    A4->word4 = 0;
+    pFileDesc_A4->word0 = D6W;
+    pFileDesc_A4->word4 = 0;
     //A4 += 124;
-    A4 += 1;
+    pFileDesc_A4 += 1;
 //
   };
 }
@@ -1335,35 +1540,43 @@ void TAG000f50(i16 P1)
 // *********************************************************
 void TAG001006(void)
 {
-  TAG0041c8(f.Pointer15076);
-  TAG0041c8(f.Pointer15080);
+  TAG0041c8(f.hIOBuffer_15076);
+  TAG0041c8(f.hFileDescriptors_15080);
 }
 
 // *********************************************************
 //
 // *********************************************************
-i16 TAG00101c(void)
+//i16 TAG00101c(void)
+i16 FindUnusedFileDescriptor(void)
 {
+//#ifdef imp101c
   dReg D7;
-  FILE_DESCRIPTOR *A4;
-  for (A4 = (FILE_DESCRIPTOR *)LoadPnt(f.Pointer15080), D7L=0;
-       D7W < f.Word15070;
-       D7W++, A4++ )
+  FILE_DESCRIPTOR *pFileDesc_A4;
+  //for (pFileDesc_A4 = (FILE_DESCRIPTOR *)LoadPnt(f.Pointer15080), D7L=0;
+  for (pFileDesc_A4 = f.hFileDescriptors_15080.GetFileDescAddr(), D7L=0;
+       //D7W < f.Word15070;
+       D7W < f.numFileDescriptor_15070;
+       D7W++, pFileDesc_A4++ )
   {
-    if (A4->word4 != 0) continue;
-    A4->byte10[0] = 0;
-    A4->word4 = 1;
-    A4->fileHandle = -1;
-    A4->word6 = 0;
+    if (pFileDesc_A4->word4 != 0) continue;
+    pFileDesc_A4->byte10[0] = 0;
+    pFileDesc_A4->word4 = 1;
+    pFileDesc_A4->fileHandle_2 = -1;
+    pFileDesc_A4->word6 = 0;
     break;
 //
 //
   };
-  if (D7W >= f.Word15070)
+  if (D7W >= f.numFileDescriptor_15070)
   {
     return -1;
   };
   return D7W;
+//#else
+//  NotImplemented(0x101c);
+//  return 0;
+//#endif
 }
 
 // *********************************************************
@@ -1373,7 +1586,7 @@ void TAG001064(i16 FDnum)
 {
   FILE_DESCRIPTOR *A4;
   A4 = FindFileDescriptor(FDnum);
-  if (A4->fileHandle != -1)
+  if (A4->fileHandle_2 != -1)
   {
   };
   //wordGear(A4+4) = 0;
@@ -1383,46 +1596,48 @@ void TAG001064(i16 FDnum)
 // *********************************************************
 //
 // *********************************************************
-i32 TAG001096_xxx(i16 P1, i16 P2)
+//i32 TAG001096_xxx(i16 P1, i16 P2)
+i32 TAG001096_xxx(i16 fileDescIndex, i16 P2)
 {
   dReg D0, D4, D5, D6, D7;
-  FILE_DESCRIPTOR *A4;
-  D7W = P1;
+  FILE_DESCRIPTOR *pFileDesc_A4;
+  D7W = fileDescIndex;
   D6L = 0;
-  A4 = FindFileDescriptor(D7W);
+  pFileDesc_A4 = FindFileDescriptor(D7W);
   if (P2 != 0)
   {
     //wordGear(A4+4) = P2;
-    A4->word4 = P2;
+    pFileDesc_A4->word4 = P2;
   };
   switch (P2)
   {
   case 2:
   case 3:
-      D6L = OpenHelpFile(A4);
+      D6L = OpenHelpFile(pFileDesc_A4);
       break;
   case 10:
       do
       {
-        if (A4->fileHandle == -1)
+        if (pFileDesc_A4->fileHandle_2 == -1)
         {
-          D6L = TAG0004b6(0x0106000f, A4);
+          D6L = TAG0004b6(0x0106000f, pFileDesc_A4);
         }
         else
         {
           D6L = 0;
           if (D6L == 0)
           {
-            D5W = CLOSE(A4->fileHandle);
-            D6W = sw(TAG000b46(D5W, A4));
+            D5W = CLOSE(pFileDesc_A4->fileHandle_2);
+            D6W = sw(TAG000b46(D5W, pFileDesc_A4));
           };
         };
       } while (D6L == 0x0102fffe);
       if (D6L == 0)
       {
-        A4->fileHandle = -1;
+        pFileDesc_A4->fileHandle_2 = -1;
       };
       break;
+#ifdef imp1096
   case 4:
     /*
 */
@@ -1437,53 +1652,63 @@ i32 TAG001096_xxx(i16 P1, i16 P2)
       /*
 */
       break;
+#endif
   case 7:
-      TAG0006f8(A4, -1, 26);
+      CheckFileDescValid(pFileDesc_A4, -1, 26);
       do
       {
-        if (A4->fileHandle == -1)
+        if (pFileDesc_A4->fileHandle_2 == -1)
         {
-          D6L = TAG0004b6(0x0106000f, A4);
+          D6L = TAG0004b6(0x0106000f, pFileDesc_A4);
         }
         else
         {
-          D6L = TAG0008c4(A4);
+          D6L = TAG0008c4(pFileDesc_A4);
           if (D6L == 0)
           {
-            D4L = READ(A4->fileHandle, 
-                       LoadLong(&A4->long94), 
-                       (ui8 *)LoadPnt((ui8 *)&A4->pointer90));
-            if (D4L != LoadLong(&A4->long94))
+            D4L = READ(pFileDesc_A4->fileHandle_2, 
+                       //LoadLong(&pFileDesc_A4->long94), 
+                       pFileDesc_A4->bufferSize_94, 
+                       //(ui8 *)LoadPnt((ui8 *)&pFileDesc_A4->pointer90));
+                       pFileDesc_A4->bufferAddress_90);
+            if (D4L != pFileDesc_A4->bufferSize_94)
             {
-              D6L = TAG0004b6(0x01060007, A4);
+              D6L = TAG0004b6(0x01060007, pFileDesc_A4);
             };
           };
         };
       } while (D6L == 0x0102fffe);
       break;
+#ifdef imp1096
   case 8:
       NotImpMsg(0x1286);
       /*
 */
       break;
+#endif
   case 9:
-      TAG0006f8(A4, -1, 18);
+      //TAG0006f8(pFileDesc_A4, -1, 18);
+      CheckFileDescValid(pFileDesc_A4, -1, 18);
       do
       {
-        if (A4->fileHandle == -1)
+        if (pFileDesc_A4->fileHandle_2 == -1)
         {
-          D6L = TAG0004b6(0x0106000f, A4);
+          NotImplemented(0x6f8);
+          D6L = TAG0004b6(0x0106000f, pFileDesc_A4);
         }
         else
         {
-          D6L = TAG0008c4(A4);
+          D6L = TAG0008c4(pFileDesc_A4);
           if (D6L == 0)
           {
-            D4L = LSEEK(LoadLong(&A4->long94), A4->fileHandle, SEEK_SET);
-            StoreLong(&A4->long14, D4L);
+            //D4L = LSEEK(LoadLong(&pFileDesc_A4->bufferSize_94), pFileDesc_A4->fileHandle_2, SEEK_SET);
+            D4L = LSEEK(pFileDesc_A4->bufferSize_94, pFileDesc_A4->fileHandle_2, SEEK_SET);
+            //StoreLong(&pFileDesc_A4->long14, D4L);
+            pFileDesc_A4->long14 = D4L;
             if (D4L < 0)
             {
-              D6L = TAG0004b6(0x010600ff, A4);
+              NotImplemented(0x6f8);
+              D6L = TAG0004b6(0x010600ff, pFileDesc_A4);
             };
           };
         };
@@ -1492,25 +1717,26 @@ i32 TAG001096_xxx(i16 P1, i16 P2)
   case 11:
       do
       {
-        if (A4->fileHandle == -1)
+        if (pFileDesc_A4->fileHandle_2 == -1)
         {
-          D6L = TAG0004b6(0x0106000f, A4);
+          D6L = TAG0004b6(0x0106000f, pFileDesc_A4);
         }
         else
         {
-          D6L = TAG0008c4(A4);
+          D6L = TAG0008c4(pFileDesc_A4);
           if (D6L == 0)
           {
-            D4L = LSEEK(0, A4->fileHandle, SEEK_CUR);
-            StoreLong(&A4->long14, D4L);
+            D4L = LSEEK(0, pFileDesc_A4->fileHandle_2, SEEK_CUR);
+            StoreLong(&pFileDesc_A4->long14, D4L);
             if (D4L < 0)
             {
-              D6L = TAG0004b6(0x010600ff, A4);
+              D6L = TAG0004b6(0x010600ff, pFileDesc_A4);
             };
           };
         };
       } while (D6L == 0x0102fffe);
       break;
+#ifdef imp1096
   case 12:
       NotImpMsg(0x13d2);
       /*
@@ -1526,12 +1752,13 @@ i32 TAG001096_xxx(i16 P1, i16 P2)
       /*
 */
       break;
+#endif
   case 22:
-      TAG0006f8(A4, -1, 128);
+      CheckFileDescValid(pFileDesc_A4, -1, 128);
       do
       {
         D5W = GetAvailFloppyMap();
-        if (A4->word116 == 32)
+        if (pFileDesc_A4->word116 == 32)
         {
           D0L = TAG000606(D5W, 0, 1) & 0xffff;
         }
@@ -1539,9 +1766,11 @@ i32 TAG001096_xxx(i16 P1, i16 P2)
         {
           D0L = TAG000606(D5W, 2, 5) & 0xffff;
         };
-        StoreLong(&A4->long14, D0L);
+        //StoreLong(&pFileDesc_A4->long14, D0L);
+        pFileDesc_A4->long14 = D0L;
       } while (D6L == 0x0102fffe);
       break;
+#ifdef imp1096
   case 23:
       NotImpMsg(0x1496);
       /*
@@ -1565,6 +1794,7 @@ i32 TAG001096_xxx(i16 P1, i16 P2)
   case 17:
   case 18:
   case 19:
+#endif
   default:
     NotImpMsg(0x14d2);
     /*
@@ -1573,9 +1803,11 @@ i32 TAG001096_xxx(i16 P1, i16 P2)
   }; //switch
   if (D6L != 0)
   {
-    StoreLong(&A4->long18, D6L);
+    NotImplemented(0x4a01b);
+    StoreLong(&pFileDesc_A4->long18, D6L);
   };
   return D6L;
+
 }
 
 // *********************************************************
@@ -1629,30 +1861,39 @@ i32 TAG001096_22(i16 P1)
 // *********************************************************
 //
 // *********************************************************
-i32 TAG0015d6_xxx(i32 P1, i32 P2, i32 P3, i32)
+//i32 TAG0015d6_xxx(i32 /*P1*/, i32 /*P2*/, i32 /*P3*/, i32)
+i32 TAG0015d6_xxx(i32 P1, i32 P2, uintptr_t P3, i32)
 {
   dReg D0, D7;
-  FILE_DESCRIPTOR *A4;
+  FILE_DESCRIPTOR *pFileDesc_A4;
   D7L = 0x0106000e;
-  A4 = FindFileDescriptor(P1);
+  pFileDesc_A4 = FindFileDescriptor(P1);
   D7L = 0;
   switch (P2)
   {
+#ifdef imp15d6
   case 1:
-      StoreLong(&A4->long18, P3);
+      StoreLong(&pFileDesc_A4->long18, P3);
       break;
+#endif
   case 2:
-      StoreLong((i32 *)(&A4->pointer82), P3);
+      //StoreLong((i32 *)(&pFileDesc_A4->pointer82), P3);
+      pFileDesc_A4->pointer82 = (pnt)P3;
       break;
+#ifdef imp15d6
   case 4:
-      StoreLong(&A4->long86, P3);
+      StoreLong(&pFileDesc_A4->long86, P3);
       break;
+#endif
   case 8:
-      StoreLong((i32 *)(&A4->pointer90), P3);
+      //StoreLong((i32 *)(&pFileDesc_A4->pointer90), P3);
+      pFileDesc_A4->bufferAddress_90 = (ui8 *)P3;
       break;
   case 16:
-      StoreLong(&A4->long94, P3);     
+      //StoreLong(&pFileDesc_A4->bufferSize_94, P3);     
+      pFileDesc_A4->bufferSize_94 = (i32)P3;     
       break;
+#ifdef imp15d6
   case 32:
       NotImpMsg(0x165c);
       /*
@@ -1663,17 +1904,18 @@ i32 TAG0015d6_xxx(i32 P1, i32 P2, i32 P3, i32)
       /*
 */
       break;
+#endif
   case 128:
       if (P3 == 0)
       {
         P2 = 0;
-        A4->word6 &= 0xff7f;//I guess!
+        pFileDesc_A4->word6 &= 0xff7f;//I guess!
       }
       else
       {
         if ( (P3 == 32) || (P3 == 64) )
         { 
-          A4->word116 = sw(P3); //lower 16 bits!
+          pFileDesc_A4->word116 = sw(P3); //lower 16 bits!
         }
         else
         {
@@ -1684,11 +1926,11 @@ i32 TAG0015d6_xxx(i32 P1, i32 P2, i32 P3, i32)
       break;
   case 256:
       //A4[10] = 0;
-      A4->byte10[0] = 0;
+      pFileDesc_A4->byte10[0] = 0;
       if (P3 == 0)
       {
         P2 = (unsigned)0x8000;
-        A4->word6 &= 0xfeff;
+        pFileDesc_A4->word6 &= 0xfeff;
       }
       else
       {
@@ -1698,36 +1940,38 @@ i32 TAG0015d6_xxx(i32 P1, i32 P2, i32 P3, i32)
         }
         else
         {
-          A4->word118 = sw(P3);
+          pFileDesc_A4->word118 = sw(P3);
           if (P3 >= 64)
           {
+            NotImplemented(0x5531cb);
             //A4->word8 = sw(A4->word14 + 65475);
-            A4->word8 = sw(wordGear((pnt)A4+14) + 65475);
-            A4->word116 = 64;  
+            pFileDesc_A4->word8 = sw(wordGear((pnt)pFileDesc_A4+14) + 65475);
+            pFileDesc_A4->word116 = 64;  
           }
           else
           {
-            A4->word8 = sw(P3 - 31);
-            if ((UI16)(A4->word8) > 2)
+            pFileDesc_A4->word8 = sw(P3 - 31);
+            if ((UI16)(pFileDesc_A4->word8) > 2)
             {
               D7L = 0x106000b;
             }
             else
             {
-              A4->word116 = 32;
+              pFileDesc_A4->word116 = 32;
             };
           };
           if (D7W == 0)
           {
             P2 |= 0x8080;
-            D0L = A4->word8 - 1;
+            D0L = pFileDesc_A4->word8 - 1;
             D0L &= 0xffff;
             // "A:\", "B:\",  etc
-            StrCpy(A4->byte10, pointer15024[D0L]);
+            StrCpy(pFileDesc_A4->byte10, pointer15024[D0L]);
           };
         };
       };
       break;
+#ifdef imp15d6
   case 512:
       NotImpMsg(0x17a2);
       /*
@@ -1738,16 +1982,18 @@ i32 TAG0015d6_xxx(i32 P1, i32 P2, i32 P3, i32)
       /*
 */
       break;
+#endif
   default:
       NotImpMsg(0x17c0);
       /*
 */
       break;
   }; //switch
-  A4->word6 |= P2;
+  pFileDesc_A4->word6 |= P2;
   if (D7L != 0)
   {
-    StoreLong(&A4->long18, D7L);
+    NotImplemented(0x3ea34);
+    StoreLong(&pFileDesc_A4->long18, D7L);
   };
   return D7L;
 }
@@ -1757,7 +2003,8 @@ i32 TAG0015d6_xxx(i32 P1, i32 P2, i32 P3, i32)
 // *********************************************************
 void SetFileName(i32 P1, pnt P2)
 {
-  TAG0015d6_xxx(P1, 2, (i32)P2, 0x1baddade);
+  //TAG0015d6_xxx(P1, 2, (i32)P2, 0x1baddade);
+  TAG0015d6_xxx(P1, 2, (uintptr_t)P2, 0x1baddade);
 }
 
 // *********************************************************
@@ -1765,7 +2012,8 @@ void SetFileName(i32 P1, pnt P2)
 // *********************************************************
 void SetBufferAddress(i16 P1, pnt P2)
 {
-  TAG0015d6_xxx(P1, 8, (i32)P2, 0x1baddade);
+  //TAG0015d6_xxx(P1, 8, (i32)P2, 0x1baddade);
+  TAG0015d6_xxx(P1, 8, (uintptr_t)P2, 0x1baddade);
 }
 
 // *********************************************************
@@ -1773,7 +2021,8 @@ void SetBufferAddress(i16 P1, pnt P2)
 // *********************************************************
 void SetBufferLength(i16 P1, i32 P2)
 {
-  TAG0015d6_xxx(P1, 16, P2, 0x1baddade);
+  //TAG0015d6_xxx(P1, 16, P2, 0x1baddade);
+  TAG0015d6_xxx(P1, 16, (uintptr_t)P2, 0x1baddade);
 }
 
 // *********************************************************
@@ -1781,7 +2030,8 @@ void SetBufferLength(i16 P1, i32 P2)
 // *********************************************************
 void TAG0015d6_128(i16 P1, i32 P2)
 {
-  TAG0015d6_xxx(P1, 128, P2, 0x1baddade);
+  //TAG0015d6_xxx(P1, 128, P2, 0x1baddade);
+  TAG0015d6_xxx(P1, 128, (uintptr_t)P2, 0x1baddade);
 }
 
 // *********************************************************
@@ -1789,7 +2039,8 @@ void TAG0015d6_128(i16 P1, i32 P2)
 // *********************************************************
 void SetDriveName(i32 P1, i32 P2)
 {
-  TAG0015d6_xxx(P1, 256, P2, 0x1baddade);
+  //TAG0015d6_xxx(P1, 256, P2, 0x1baddade);
+  TAG0015d6_xxx(P1, 256, (uintptr_t)P2, 0x1baddade);
 }
 
 // *********************************************************
@@ -1831,10 +2082,12 @@ i32 TAG001896(void)
 // *********************************************************
 //
 // *********************************************************
-i32 TAG00189c(i16 P1, i32 , const char* P3)
+//i32 TAG00189c(i16 P1, i32 , uintptr_t P3)
+i32 ErrorCondition(i16 P1, i32 , uintptr_t P3)
 {
   dReg D5, D6, D7;
   SS12 *ss12A4;
+  NotImplemented(0x189c);
   D7L = P1;
   if (D7L == 0)
   {
@@ -1916,17 +2169,23 @@ i16 TAG001964(i16 P1,i32 P2,i32 P3,i32 (*P4)(i32, pnt))
 // *********************************************************
 //
 // *********************************************************
-i16 TAG001a32(pnt P1, i16 P2, i16 P3)
+//i16 TAG001a32(pnt P1, i16 P2, i16 P3)
+i16 TAG001a32(wordRectPos *P1, i16 P2, i16 P3)
 {
   dReg D6, D7;
-  aReg A4;
+  //aReg A4;
+  wordRectPos *A4;
   A4 = P1;
   D7W = P2;
   D6W = P3;
-  if (D7W > wordGear(A4+2)) return 0;
-  if (D7W < wordGear(A4+0)) return 0;
-  if (D6W > wordGear(A4+6)) return 0;
-  if (D6W < wordGear(A4+4)) return 0;
+  //if (D7W > wordGear(A4+2)) return 0;
+  //if (D7W < wordGear(A4+0)) return 0;
+  //if (D6W > wordGear(A4+6)) return 0;
+  //if (D6W < wordGear(A4+4)) return 0;
+  if (D7W > A4->x2) return 0;
+  if (D7W < A4->x1) return 0;
+  if (D6W > A4->y2) return 0;
+  if (D6W < A4->y1) return 0;
   return 1;
 }
 
@@ -1950,20 +2209,27 @@ void ClearKeyboard(void)
 // *********************************************************
 //
 // *********************************************************
-i16 TAG001a9e(pnt P1, i16 P2, i16 P3, i16 P4)
+//i16 TAG001a9e(pnt P1, i16 P2, i16 P3, i16 P4)
+i16 TAG001a9e(T12 *P1, i16 P2, i16 P3, i16 P4)
 {
   dReg D0, D5, D6, D7;
-  aReg A4;
+  //aReg A4;
+  T12 *A4;
   A4 = P1;
   D7W = P2;
   D6W = P3;
   if (A4 == NULL) return 0;
-  for (; (D5W = (UI8)(A4[0])) != 0; A4 += 12)
+  //for (; (D5W = (UI8)(A4[0])) != 0; A4 += 12)
+  //for (; (D5W = (UI8)(A4[0])) != 0; A4 ++)
+  for (; (D5W = A4->b0) != 0; A4++)
   {
-    D0W = TAG001a32(A4+2, D7W, D6W);
+    //D0W = TAG001a32(A4+2, D7W, D6W);
+    D0W = TAG001a32(&A4->rectPos2, D7W, D6W);
     if (D0W == 0) continue;
-    if ((P4 & wordGear(A4+10)) == 0) continue;
-    if ((A4[1] & 1) == 0) break;
+    //if ((P4 & wordGear(A4+10)) == 0) continue;
+    if ((P4 & A4->w10) == 0) continue;
+    //if ((A4[1] & 1) == 0) break;
+    if ((A4->b1 & 1) == 0) break;
 //
   };
   return D5W;
@@ -1975,7 +2241,7 @@ i16 TAG001a9e(pnt P1, i16 P2, i16 P3, i16 P4)
 void TAG001afe(i32 P1, i32 P2, i32 P3)
 {//Enqueues a mouse click
   dReg D4, D5, D6, D7;
-  pnt *pA4;
+  //pnt *pA4;
   S6  *s6A0;
   i32 i;
   D7W = sw(P1);
@@ -1992,16 +2258,24 @@ void TAG001afe(i32 P1, i32 P2, i32 P3)
   D5W = sw(word14202 + 2);
   if (D5W > 4) D5W -= 5;
   if (D5W == word14202) return;
-  for (i = 0, pA4 = pointer14130;
-       i < 6;
-       i++, pA4 ++)
+  //for (i = 0, pA4 = pointer14130;
+  //     i < 6;
+  //     i++, pA4++)
+  for (i = 0; i < 6; i++)
   {
-    if (*pA4 == NULL) continue;
-    if ((*pA4)[1] & 1) continue;
-    D4W = TAG001a9e((pnt)LoadPnt((*pA4)+2),
-                     D7W,
-                     D6W,
-                     (UI16)P3);
+    //if (*pA4 == NULL) continue;
+    if (pointer14130[i] == NULL) continue;
+    //if (pointer14130[i][1] & 1) continue;
+    if (pointer14130[i]->b1 & 1) continue;
+//#ifdef imp1afe
+    //D4W = TAG001a9e((pnt)LoadPnt((*pA4)+2),
+    D4W = TAG001a9e(pointer14130[i]->pt12_2,
+                    D7W,
+                    D6W,
+                    (UI16)P3);
+//#else
+//  NotImplemented(0x1afe);
+//#endif
     if (D4W == 0) continue;
     if ((D5W--) == 0)
     {
@@ -2018,6 +2292,7 @@ void TAG001afe(i32 P1, i32 P2, i32 P3)
 //
   };
   word14200 = 0;
+
 }
 
 // *********************************************************
@@ -2035,8 +2310,9 @@ void TAG001bee(void)
 // *********************************************************
 //
 // *********************************************************
-void TAG001c0c(i32 P1)
+void TAG001c0c(i32 /*P1*/)
 {
+#ifdef imp1c0c
   dReg D0, D1, D4, D5, D6, D7;
   aReg A0, A3;
   S6  *s6A0;
@@ -2123,6 +2399,10 @@ tag001cd2:
 tag001d5c:
   word14200 = 0;
   TAG001bee();
+#else
+  NotImplemented(0x1c0c);
+#endif
+
 }
 
 // *********************************************************
@@ -2132,13 +2412,19 @@ tag001d5c:
 i16 EnableButtons(CLICKMAP *P1)
 {
   dReg D7;
-  pnt *pA4;
-  for (D7L = 0, pA4 = pointer14130;
+  //pnt *pA4;
+  //CLICKMAP *pA4;
+  //for (D7L = 0, pA4 = pointer14130;
+  //     D7W < 6;
+  //     D7W++, pA4++)
+  for (D7L = 0;
        D7W < 6;
-       D7W++, pA4++)
+       D7W++)
   {
-    if (*pA4 != NULL) continue;
-    *pA4 = (pnt)P1;
+    //if (*pA4 != NULL) continue;
+    if (pointer14130[D7L] != NULL) continue;
+    //*pA4 = (pnt)P1;
+    pointer14130[D7L] = P1;
     ClearKeyboard();
     return D7W;  
 //
@@ -2153,7 +2439,9 @@ i16 EnableButtons(CLICKMAP *P1)
 RESTARTABLE _TAG001dde(S6 *P1)
 {//(i32)
   static dReg D0, D1, D7;
-  static aReg A0, A3;
+  //static aReg A0, A3;
+  static aReg A3;
+  static CLICKMAP *A0;
   static S6  *s6A0, *s6A1, *s6A4;
   RESTARTMAP
     RESTART(1)
@@ -2192,8 +2480,14 @@ RESTARTABLE _TAG001dde(S6 *P1)
     D0W = s6A4->b1;
     D7W = D0W;
     A0 = pointer14130[D0W];
-    s6A4->b1 = *A0;
-    A3 = (aReg)LoadPnt(A0+10);
+    //s6A4->b1 = *A0;
+    s6A4->b1 = A0->b0;
+//#ifdef imp1dde
+    //A3 = (aReg)LoadPnt(A0+10);
+    A3 = A0->p10;
+//#else
+//    NotImplemented(0x1dde);
+//#endif
     if (A3 != NULL)
     {
       NotImpMsg(0x1ea0);//(*A3)(A4);
@@ -2203,6 +2497,7 @@ RESTARTABLE _TAG001dde(S6 *P1)
   D0W = sw(s6A4->b1 << 8);
   D1W = s6A4->b0;
   RETURN_int(sw(D0W | D1W));
+
 }
 
 void TAG001ec0(pnt a,pnt b,wordRectPos *c,
@@ -2333,8 +2628,10 @@ void TAG002b5c(i16 P1, i16 P2)
   case 1:
       f.Word12804 = P2;
       TAG009d7e(f.Word12804, &w_6, &f.Word12820, &f.Word12818);
-      TAG009dea(f.Word12804, (i32)TAG002bf4, &f.Long12814);
-      TAG009db6(f.Word12804, (i32)TAG002c1a, &f.Long12810);
+      //TAG009dea(f.Word12804, (i32)TAG002bf4, &f.Long12814);
+      TAG009dea(f.Word12804, (uintptr_t)TAG002bf4, &f.Long12814);
+      //TAG009db6(f.Word12804, (i32)TAG002c1a, &f.Long12810);
+      TAG009db6(f.Word12804, (uintptr_t)TAG002c1a, &f.Long12810);
       break;
   case 2:
       TAG009dea(f.Word12804, f.Long12814, &i_10);
@@ -2366,32 +2663,37 @@ void TAG002c1a(void)
 // *********************************************************
 //
 // *********************************************************
-i32 TAG002c5e(const char* P1,pnt P2,pnt P3)
+i32 TAG002c5e(const char* P1,DATINDEX *P2,pnt P3)
 {//(i32)
   dReg D7;
-  aReg A0, A1, A3, A4;
+  //aReg A0, A1, A3, A4;
+  aReg A0, A1, A3;
+  DATINDEX *pDatIndex_A4;
   i16 w_20;
   i32 i_18;
   i32 i_10;
   i32 i_6;
   i16 w_2;
-  A4 = P2;
-  wordGear(A4) = TAG00101c(); //Get a FILE_DESCRIPTOR
-  if (wordGear(A4) != 0)
+  pDatIndex_A4 = P2;
+  //wordGear(A4) = FindUnusedFileDescriptor(); //Get a FILE_DESCRIPTOR
+  pDatIndex_A4->handle0 = FindUnusedFileDescriptor(); //Get a FILE_DESCRIPTOR
+  if (pDatIndex_A4->handle0 != 0)
   {
     return (0);
   };
-  TAG0076a0_40(14, wordGear(A4), P1, -1);//Set filename=*P1
-  i_18 = TAG001096_2(wordGear(A4)); //Open the file
+  //TAG0076a0_40(14, wordGear(A4), P1, -1);//Set filename=*P1
+  TAG0076a0_40(14, pDatIndex_A4->handle0, P1, -1);//Set filename=*P1
+  //i_18 = TAG001096_2(wordGear(A4)); //Open the file
+  i_18 = TAG001096_2(pDatIndex_A4->handle0); //Open the file
   if (i_18 != 0)
   {
     w_20 = 0;
   }
   else
   {
-    SetBufferLength(wordGear(A4), 2);
-    SetBufferAddress(wordGear(A4), (pnt)&w_2);
-    i_18 = ReadFile(wordGear(A4));//read w_2
+    SetBufferLength(pDatIndex_A4->handle0, 2);
+    SetBufferAddress(pDatIndex_A4->handle0, (pnt)&w_2);
+    i_18 = ReadFile(pDatIndex_A4->handle0);//read w_2
     w_2 = LE16(w_2);
     if (i_18 != 0)
     {
@@ -2399,33 +2701,39 @@ i32 TAG002c5e(const char* P1,pnt P2,pnt P3)
     }
     else
     {
-      StorePnt(A4+4, AssignMemory(17, 4*(w_2+1)));
-      SetBufferLength(wordGear(A4), 2*w_2);
-      SetBufferAddress(wordGear(A4), (pnt)LoadPnt(A4+4));
-      i_18 = ReadFile(wordGear(A4));//read 4 words
+      //StorePnt(A4+4, AssignMemory(17, 4*(w_2+1)));
+      pDatIndex_A4->pFileOffsets4 = (i32 *)AssignMemory(17, 4*(w_2+1));
+      SetBufferLength(pDatIndex_A4->handle0, 2*w_2);
+      SetBufferAddress(pDatIndex_A4->handle0,  (pnt)pDatIndex_A4->pFileOffsets4);
+      i_18 = ReadFile(pDatIndex_A4->handle0);//read 4 words
       if (i_18 != 0)
       {
         w_20 = 0;
       }
       else
       {
-        wordGear(A4+2) = sw(w_2 - 1);
-        A3 = (aReg)LoadPnt(A4+4); //the 4 words we just read
+        //wordGear(A4+2) = sw(w_2 - 1);
+        pDatIndex_A4->numSeg2 = sw(w_2 - 1);
+        //A3 = (aReg)LoadPnt(A4+4); //the 4 words we just read
+        A3 = (aReg)pDatIndex_A4->pFileOffsets4; //the 4 words we just read (file offsets)
         if (P3 != 0)
         {
- 
+#ifdef imp2c5e 
           StorePnt(P3, AssignMemory(14, 2*(w_2 + 1)));
           MemoryMove(LoadPnt(A4+4),
                      LoadPnt(P3),
                      1024,
                      1024,
                      2*(w_2 + 1) );
-
+#else
+          NotImplemented(0x2c5e);
+#endif
         };
         for (D7W = sw(w_2-1); D7W >= 0; D7W--)
-        {
+        {  //Convert each word to a long.
           A0 = A3 + 2*D7W;
-          A1 = (aReg)LoadPnt(A4+4) + 4*D7W;
+          //A1 = (aReg)LoadPnt(A4+4) + 4*D7W;
+          A1 = (aReg)pDatIndex_A4->pFileOffsets4 + 4*D7W;
           StoreLong(A1, LE16(wordGear(A0)));
 //
 //
@@ -2433,7 +2741,8 @@ i32 TAG002c5e(const char* P1,pnt P2,pnt P3)
         i_6 = 4*w_2 + 2; // Offset of first segment
         for (D7L = 0; D7W <= w_2; D7W++)
         {
-          A0 = (aReg)LoadPnt(A4+4) + 4*D7W;
+          //A0 = (aReg)LoadPnt(A4+4) + 4*D7W;
+          A0 = (aReg)pDatIndex_A4->pFileOffsets4 + 4*D7W;
           i_10 = LoadLong(A0);
           //A0 = LoadPnt(A4+4) + 4*D7W;
           StoreLong(A0, i_6);//file offset of each of 4 segments
@@ -2441,14 +2750,25 @@ i32 TAG002c5e(const char* P1,pnt P2,pnt P3)
 //
 //
         };
-        f.pDatIndex12802 = (DATINDEX *)A4;
+        //f.pDatIndex12802 = (DATINDEX *)A4;
+        f.pDatIndex12802 = pDatIndex_A4;
         return (0);
       };
+#ifdef imp2c5e
+#else
+      NotImplemented(0x2c5e);
+#endif
     };
   };
+#ifdef imp2c5e
   TAG001096_10(wordGear(A4));
   TAG001064(wordGear(A4));
   return (1);
+#else
+  NotImplemented(0x2c5e);
+  return 0;
+#endif
+
 }
 
 // *********************************************************
@@ -2460,7 +2780,7 @@ void TAG002e64(void)
   DatIA4 = f.pDatIndex12802;
   TAG001096_10(DatIA4->handle0);
   TAG001064(DatIA4->handle0);
-  ReleaseMem(17, (ui8 *)DatIA4->fileOffsets4);
+  ReleaseMem(17, (ui8 *)DatIA4->pFileOffsets4);
   TAG0060c4();
   return;
 }
@@ -2474,26 +2794,26 @@ i32 ReadDatSeg(pnt P1, i16 P2)
 { // Read sement of HCSB.DAT
   dReg D0;
   i32 *iA0, *iA1;
-  DATINDEX *DatIA4;
+  DATINDEX *pDatIndex_A4;
   i32 i_8;
   i32 i_4;
-  DatIA4 = f.pDatIndex12802;
-  iA0 = &DatIA4->fileOffsets4[P2];;
-  SetBufferLength(DatIA4->handle0, *iA0); //Actually the file offset
-  i_4 = FileSeek(DatIA4->handle0);//LSEEK to start of segment
+  pDatIndex_A4 = f.pDatIndex12802;
+  iA0 = &pDatIndex_A4->pFileOffsets4[P2];;
+  SetBufferLength(pDatIndex_A4->handle0, *iA0); //Actually the file offset
+  i_4 = FileSeek(pDatIndex_A4->handle0);//LSEEK to start of segment
   if (i_4 != 0)
   {
     i_8 = 66;
   }
   else
   {
-    iA0 = &DatIA4->fileOffsets4[P2];
-    iA1 = &DatIA4->fileOffsets4[P2+1];
+    iA0 = &pDatIndex_A4->pFileOffsets4[P2];
+    iA1 = &pDatIndex_A4->pFileOffsets4[P2+1];
     D0L = *iA1;
     D0L -= *iA0;
-    SetBufferLength(DatIA4->handle0, D0L);
-    SetBufferAddress(DatIA4->handle0, P1);
-    i_4 = ReadFile(DatIA4->handle0);
+    SetBufferLength(pDatIndex_A4->handle0, D0L);
+    SetBufferAddress(pDatIndex_A4->handle0, P1);
+    i_4 = ReadFile(pDatIndex_A4->handle0);
     if (i_4 != 0)
     {
       i_8 = 67;
@@ -2516,7 +2836,7 @@ i32 TAG002f6c(ui8 *P1, i16 P2, i16 P3, i16 P4)
   i32 i_10;
   pnt pnt_4;
   i_10 = 0x1baddade;
-  iA0 = &f.pDatIndex12802->fileOffsets4[P2];//offset of this segment
+  iA0 = &f.pDatIndex12802->pFileOffsets4[P2];//offset of this segment
   D0L = iA0[1] - iA0[0];// segment length
   pnt_4 = AssignMemory(17, D0L);
   if (pnt_4 != NULL)
@@ -2783,7 +3103,7 @@ i32 TAG003210(i16 handle,   // @8
     };
     D5W = D4W;
   };
-  return (rsltAddr - pnt_12);
+  return (i32)(rsltAddr - pnt_12);
 }
 
 // *********************************************************
@@ -2797,121 +3117,184 @@ void TAG00339e(wordRectPos *P1, i16 P2)
 // *********************************************************
 //
 // *********************************************************
-pnt TAG0035e6(pnt P1)
+//pnt TAG0035e6(pnt /*P1*/)
+OBJECT_HEADER *LocateObjectHeader(OBJECT_HANDLE P1)
 {
+//#ifdef imp35e6
   dReg D0;
   aReg A4;
-  A4 = (aReg)LoadPnt(P1);
+  //A4 = (aReg)LoadPnt(P1);
+  A4 = (aReg)P1.GetObjectAddress();
+  // The first word in front of the object is the preamble length
   A4 -= 2;
   D0L = (UI16)(wordGear(A4));
-  D0L += 12;
-  return A4 - D0L;
+  //D0L += 12;
+  D0L += sizeof(OBJECT_HEADER);
+  return (OBJECT_HEADER *)(A4 - D0L);
+//#else
+//  NotImplemented(0x35e6);
+//  return NULL;
+//#endif
+
 }
 
 // *********************************************************
 //
 // *********************************************************
-void TAG00364c(pnt P1, S18 *P2)
+//void TAG00364c(pnt P1, MEMORY_S18 *P2)
+void MEMORY_S18::UnlinkMemoryBlock(MEMORY_BLOCK_HEADER *P1)
 {
-  aReg A2, A3, A4;
-  A4 = P1;
-  A2 = (aReg)LoadPnt(A4+4);
-  A3 = (aReg)LoadPnt(A4+8);
-  if (A2 != NULL)
+//#ifdef imp364c
+  //aReg A2, A3, A4;
+  MEMORY_BLOCK_HEADER *pCurrHeader_A4;
+  MEMORY_BLOCK_HEADER *pPrevHeader_A2;
+  MEMORY_BLOCK_HEADER *pNextHeader_A3;
+  //A4 = P1;
+  pCurrHeader_A4 = P1;
+  //A2 = (aReg)LoadPnt(A4+4);
+  pPrevHeader_A2 = pCurrHeader_A4->pNext;
+  //A3 = (aReg)LoadPnt(A4+8);
+  pNextHeader_A3 = pCurrHeader_A4->pPrev;
+  //if (A2 != NULL)
+  if (pPrevHeader_A2 != NULL)
   {
-    StorePnt(A2+8, A3);
+    //StorePnt(A2+8, A3);
+    pPrevHeader_A2->pNext = pNextHeader_A3;
   }
   else
   {
-    P2->pnt10 = A3;
+    //P2->pnt10 = A3;
+    m_pFirstAvailBlock_10 = pNextHeader_A3;
   };
-  if (A3 != NULL) StorePnt(A3+4, A2);
+  //if (A3 != NULL) StorePnt(A3+4, A2);
+  if (pNextHeader_A3 != NULL) pNextHeader_A3->pPrev = pPrevHeader_A2;
+//#else
+//  NotImplemented(0x364c);
+//#endif
+
 }
 
 // *********************************************************
 //
 // *********************************************************
-S18 *TAG00360a(pnt P1)
+//MEMORY_S18 *TAG00360a(pnt P1)
+MEMORY_S18 *LocateMemoryHeap(pnt P1)
 {
+//#ifdef imp360a
   dReg  D7;
   aReg  A4;
-  S18  *s18A3;
+  MEMORY_S18  *s18A3;
   A4 = P1;
   for (D7L = 0, s18A3 = f.s18_124; 
-       D7W < f.Word126; 
+       D7W < f.numHeap_126; 
        D7W++, s18A3++)
   {
-    if (A4 >= s18A3->pnt0)
+    if (A4 >= (aReg)s18A3->m_pFirstBlock_0)
     {
-      if (A4 <= s18A3->pnt0 + s18A3->i6) break;
+      if (A4 <= (aReg)s18A3->m_pFirstBlock_0 + s18A3->m_i6) break;
     };
 
 //
   };
-  if (D7W == f.Word126)
+  if (D7W == f.numHeap_126)
   {
     s18A3 = NULL;
   };
   return s18A3;
+//#else
+//  NotImplemented(0x360a);
+//  return NULL;
+//#endif
+
 }
 
 // *********************************************************
 //
 // *********************************************************
-void TAG003682(pnt P1, S18 *P2)
+//void TAG003682(pnt P1, S18 *P2)
+void MEMORY_S18::LinkNewBlock(MEMORY_BLOCK_HEADER *pNewBlock)
+       // P1 = pointer to a memory block
+       // P2 = pointer to memory block descriptor
 {
-  dReg D7;
-  aReg A2, A3, A4;
-  A4 = P1;
-  A3 = P2->pnt10;
-  A2 = NULL;
-  D7L = LoadLong(A4) & 0x7fffffff;
-  while (A3 != NULL)
-  {
-    if (D7L > (LoadLong(A3) & 0x7fffffff)) break;
-    A2 = A3;
-    A3 = (aReg)LoadPnt(A3+8);
+  //dReg D7;
+  ui32 numUsableBytes_D7;
+  //aReg A2, A3;
+  MEMORY_BLOCK_HEADER *pPreviousBlock_A2;
+  MEMORY_BLOCK_HEADER *pFirstSmallerBlock_A3;
+  MEMORY_BLOCK_HEADER *pUnusedBlockHeader_A4 = pNewBlock;
+  pFirstSmallerBlock_A3 = m_pFirstAvailBlock_10;
+  pPreviousBlock_A2 = NULL;
+  //D7L = LoadLong(A4) & 0x7fffffff;
+  numUsableBytes_D7 = pUnusedBlockHeader_A4->usableSize & 0x7fffffff;
+  while (pFirstSmallerBlock_A3 != NULL)
+  { // Find first block smaller than the new block
+    if (numUsableBytes_D7 > (pFirstSmallerBlock_A3->usableSize & 0x7fffffff)) break;
+    pPreviousBlock_A2 = pFirstSmallerBlock_A3;
+    //A3 = (aReg)LoadPnt(A3+8);
+    pFirstSmallerBlock_A3 = pFirstSmallerBlock_A3->pNext;
 //
   };
-  if (A2 != NULL)
+  if (pPreviousBlock_A2 != NULL)
   {
-    StorePnt(A2+8, A4);
+    //StorePnt(pPreviousBlock_A2+8, pUnusedBlockHeader_A4);
+    pPreviousBlock_A2->pNext = pUnusedBlockHeader_A4;
   }
   else
   {
-    P2->pnt10 = A4;
+    //P2->pnt10 = pUnusedBlockHeader_A4;
+    m_pFirstAvailBlock_10 = pUnusedBlockHeader_A4;
   };
-  if (A3 != NULL)
+  if (pFirstSmallerBlock_A3 != NULL)
   {
-    StorePnt(A3+4, A4);
+    //StorePnt(A3+4, pUnusedBlockHeader_A4);
+    pFirstSmallerBlock_A3->pPrev = pUnusedBlockHeader_A4;
   };
-  StorePnt(A4+8, A3);
-  StorePnt(A4+4, A2);
+  //StorePnt(pUnusedBlockHeader_A4+8, A3);
+  //StorePnt(pUnusedBlockHeader_A4+4, pPreviousBlock_A2);
+  pUnusedBlockHeader_A4->pNext = pFirstSmallerBlock_A3;
+  pUnusedBlockHeader_A4->pPrev = pPreviousBlock_A2;
+}
+
+// *********************************************************
+//
+//       Set the size of the block in the header and trailer.
+//       Link the block in the list of available blocks.
+//
+// *********************************************************
+//void TAG0036e4(pnt P1, i32 P2, S18 *P3)
+void MEMORY_S18::AddMemoryBlock(MEMORY_BLOCK_HEADER *pNewBlock, i32 size)
+//             P1 = pointer to usable part of memory block
+//             P2 = # usable bytes
+//             P3 = pointer to block descriptor
+{
+  //dReg  D6;
+  //i32 numUsableBytes_D7;
+  //aReg  A0;
+  MEMORY_BLOCK_TRAILER *pUnusedBlockTrailer_A0;
+  //UNUSED_MEMORY_BLOCK_HEADER *pBlockToAdd_A4;
+  //MEMORY_S18  *pS18A3;
+  //pBlockToAdd_A4 = P1;
+  //numUsableBytes_D7 = usableBytes;
+  //pS18A3 = P3;
+  //D6L = D7L | 0x80000000;
+  //D6L = size | 0x80000000;
+  //StoreLong(A4, D6L);
+  pNewBlock->usableSize = size | 0x80000000;
+  //A0 = A4 + D7L;
+  //A0 = A4 + D7L;
+  pUnusedBlockTrailer_A0 = (MEMORY_BLOCK_TRAILER *)
+                              ((ui8 *)pNewBlock + size-sizeof(MEMORY_BLOCK_TRAILER));
+  //StoreLong(A0-4, D6L);
+  pUnusedBlockTrailer_A0->usableSize = size | 0x80000000;
+  LinkNewBlock(pNewBlock);
 }
 
 // *********************************************************
 //
 // *********************************************************
-void TAG0036e4(pnt P1, i32 P2, S18 *P3)
+void TAG003720(pnt /*P1*/, i32 /*P2*/, MEMORY_S18 * /*P3*/)
 {
-  dReg  D6, D7;
-  aReg  A0, A4;
-  S18  *s18A3;
-  A4 = P1;
-  D7L = P2;
-  s18A3 = P3;
-  D6L = D7L | 0x80000000;
-  StoreLong(A4, D6L);
-  A0 = A4 + D7L;
-  StoreLong(A0-4, D6L);
-  TAG003682(A4, s18A3);
-}
-
-// *********************************************************
-//
-// *********************************************************
-void TAG003720(pnt P1, i32 P2, S18 *P3)
-{
+#ifdef imp3720
   dReg D6, D7;
   aReg A0, A4;
   S18 *s18A3;
@@ -2924,7 +3307,8 @@ void TAG003720(pnt P1, i32 P2, S18 *P3)
   {
     D6L &= 0x7fffffff;
     A4 -= D6L;
-    TAG00364c(A4, s18A3);
+    //UnlinkMemoryBlock(A4, s18A3);
+    s18A3->UnlinkMemoryBlock(A4);
     D7L += D6L;
   };
   A0 = A4 + D7L;
@@ -2932,55 +3316,85 @@ void TAG003720(pnt P1, i32 P2, S18 *P3)
   if (D6L & 0x80000000)
   {
     D6L &= 0x7fffffff;
-    TAG00364c(A4+D7L, s18A3);
+    //UnlinkMemoryBlock(A4+D7L, s18A3);
+    s18A3->UnlinkMemoryBlock(A4+D7L);
     D7L += D6L;
   };
-  TAG0036e4(A4, D7L, s18A3);
+  AddMemoryBlock(A4, D7L, s18A3);
+#else
+  NotImplemented(0x3720);
+  return;
+#endif
+
 }
 
 // *********************************************************
 //
 // *********************************************************
-pnt TAG003788(i32 P1, S18 *P2, i16 *P3)
+//pnt TAG003788(i32 P1, MEMORY_S18 * P2, i16 * P3)
+MEMORY_BLOCK_HEADER *FindSuitableBlock(i32 requestedSize, MEMORY_S18 *P2, i16 *pPerfectFit)
 {
   dReg D0, D6, D7;
-  aReg  A2, A3;
-  S18  *s18A4;
+  //aReg  A2, A3;
+  MEMORY_BLOCK_HEADER *pUnusedMemoryBlockHeader_A3;
+  MEMORY_BLOCK_HEADER *pPerfectFitHeader_A2;
+  MEMORY_S18  *s18A4;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  D7L = P1;
+  D7L = requestedSize;
   s18A4 = P2;
   D7L |= 0x80000000;
-  A3 = s18A4->pnt10;
-  A2 = NULL;
-  while (A3 != NULL)
+  //A3 = s18A4->pFirstAvailBlock_10;
+  pUnusedMemoryBlockHeader_A3 = s18A4->m_pFirstAvailBlock_10;
+  //A2 = NULL;
+  pPerfectFitHeader_A2 = NULL;
+  while (pUnusedMemoryBlockHeader_A3 != NULL)
   {
-    D6L = LoadLong(A3);
-    if (D6L < D7L) break;
-    D0L = D6L - D7L;
-    if (D0L <= 34) A2 = A3;
+    // Search for the smallest block that wastes not more than 34 words.
+
+    //D6L = LoadLong(A3);
+    D6L = pUnusedMemoryBlockHeader_A3->usableSize;
+    if (D6L < D7L) break; // if blocksize < requestedsSize
+                          // Nothing found because the blocks are in 
+                          // descending order by size
+    D0L = D6L - D7L;     
+    //if (D0L <= 34) A2 = A3;
+    //if (D0L <= 34) A2 = A3;  // If it is not more than 34 words too large
+    if (D0L <= 34) // If it is not more than 34 words too large
+      pPerfectFitHeader_A2 = pUnusedMemoryBlockHeader_A3;  
 //
-    A3 = (aReg)LoadPnt(A3+8);
+    //A3 = (aReg)LoadPnt(A3+8);
+    pUnusedMemoryBlockHeader_A3 = pUnusedMemoryBlockHeader_A3->pNext;
 //
   };
-  if (A2 == NULL)
+  if (pPerfectFitHeader_A2 == NULL)
   {
-    A3 = s18A4->pnt10;
-    if (D7L > LoadLong(A3)) goto tag0037e0;
-    A2 = A3;
-    *P3 = 0;
+//    A3 = s18A4->pnt10;
+    //if (D7L > LoadLong(A3)) goto tag0037e0;
+    //if (D7L <= LoadLong(A3))
+    if ((ui8)D7L <= s18A4->m_pFirstAvailBlock_10->usableSize)
+    {
+//      A2 = A3;
+      *pPerfectFit = 0;
+      return s18A4->m_pFirstAvailBlock_10;
+    }
+    else
+    {
+      return NULL;
+    };
   }
   else
   {
-    *P3 = 1;
+    *pPerfectFit = 1;
+    return pPerfectFitHeader_A2;
   };
-tag0037e0:
-  return A2;
+//tag0037e0:
+
 }
 
 // *********************************************************
 //
 // *********************************************************
-i16 TAG003b3a(S18 *,i32)
+i16 TAG003b3a(MEMORY_S18 *,i32)
 {
   NotImpMsg(0x3b3a); return 0;
 }
@@ -2988,108 +3402,190 @@ i16 TAG003b3a(S18 *,i32)
 // *********************************************************
 //
 // *********************************************************
-pnt TAG003c50(i16 P1)
+//ui8 *TAG003c50(i16 P1)
+HANDLE_LIST_HEADER_S16 *NewHandleBlock(i16 numEntry)
 {
-  dReg D6, D7;
-  aReg A3, A4;
-  S18  *s18A2;
-  S12  s_12;
+  //dReg D6, D7;
+  dReg D6;
+  //aReg A3, A4;
+  //aReg A3;
+  HANDLE_LIST_HEADER_S16 *pS16_A3;
+  HANDLE_LIST_HEADER_S16 *result_A4;
+  MEMORY_S18  *s18A2;
+  OBJECT_DEF  s_12;
 //;;;;;;;;;;;;;;;;;;;;;;;
-  D7W = P1;
-  A4 = NULL;
-  D6L = 4 * (UI16)(D7W) + 20;
-  A3 = f.Pointer132;
-  s_12.w4 = 1024;
-  s_12.i0 = D6L;
-  s18A2 = TAG003df0(&s_12);
-  if (s18A2 == NULL) return A4;
-  A4 = TAG003efc(D6L, 1024, s18A2);
-  if (A4 == NULL) return A4;
-  A4[4] = -1;
-  A4[5] = -128;
-  StorePnt(A4+6, NULL);
-  wordGear(A4+10) = D7W;
-  wordGear(A4+12) = 0;
-  wordGear(A4+14) = 0;
-  ClearMemory((ui8 *)A4+16, D6L-20);
-  if  (A3 != NULL)
+  //D7W = numEntry;
+  result_A4 = NULL;
+  //D6L = 4 * (UI16)(D7W) + 20;
+  //D6L = 4 * (UI16)(D7W) + 20;
+  D6L = sizeof(void *) * (UI16)(numEntry) + 20;
+  s_12.memType_4 = 1024;
+  s_12.allocatedSize_0 = D6L;
+  //s18A2 = TAG003df0(&s_12);
+  s18A2 = FindSuitableHeap(&s_12);
+  if (s18A2 == NULL) return NULL;
+  //result_A4 = (ui8 *)AllocateMemoryBlock(D6L, 1024, s18A2);
+  // Allocate space for header and the trailing memory block word containing its length.
+  result_A4 = (HANDLE_LIST_HEADER_S16 *)
+                s18A2->AllocateMemoryBlock(D6L + sizeof(ui32) + sizeof(*result_A4), 1024);
+//#ifdef imp3c50
+  if (result_A4 == NULL) return NULL;
+  //result_A4[4] = -1;
+  //result_A4-> = -1;
+  result_A4->b4 = -1;
+  //result_A4[5] = -128;
+  result_A4->b5 = -128;
+  //StorePnt(A4+6, NULL);
+  result_A4->pNext_6 = NULL;
+  //wordGear(A4+10) = D7W;
+  result_A4->maxNumHandles_10 = numEntry;
+  //wordGear(A4+12) = 0;
+  result_A4->numHandlesAllocated_12 = 0;
+  //wordGear(A4+14) = 0;
+  result_A4->startingSearchIndex_14 = 0;
+  //ClearMemory((ui8 *)A4+16, D6L-20);
+  ClearMemory((ui8 *)result_A4+sizeof(*result_A4), D6L);
+  //Add the new header to the list at f.handleList
+  pS16_A3 = f.handleList_132;
+  if  (pS16_A3 != NULL)
   {
-    while (LoadPnt(A3+6) != NULL) A3 = (aReg)LoadPnt(A3+6);
+    //while (LoadPnt(A3+6) != NULL) A3 = (aReg)LoadPnt(A3+6);
+    while (pS16_A3->pNext_6 != NULL) pS16_A3 = pS16_A3->pNext_6;
 //
 
-    StorePnt(A3+6, A4);
+    //StorePnt(A3+6, A4);
+    pS16_A3->pNext_6 = result_A4;
   }
   else
   {
-    f.Pointer132 = A4;
+    f.handleList_132 = result_A4;
   };
-  return A4;
+//#else
+//  NotImplemented(0x3c50);
+//#endif
+  //return result_A4;
+  return result_A4;
+
 }
 
 // *********************************************************
 //
 // *********************************************************
-pnt TAG003cf6(pnt *P1)
+//pnt TAG003cf6(pnt *P1)
+//pnt TAG003cf6(S16 **P1)
+OBJECT_HANDLE NewObjectHandle(HANDLE_LIST_HEADER_S16 **P1)
 {
-  dReg D5, D6, D7;
-  aReg A2, A3;
-  pnt *pntA4;
+  //dReg D5, D6, D7;
+  dReg D6, D7;
+  bool found_D5;
+  //aReg A2, A3;
+  //aReg A3;
+  HANDLE_LIST_HEADER_S16 *pS16_A2;
+  ui8 **result;
+  //pnt *pntA4;
+  //HANDLE_LIST_HEADER_S16 **pntA4;
 //;;;;;;;;;;;
-  A3 = NULL;
-  pntA4 = P1;
-  D5L = 0;
-  for (A2=f.Pointer132; (A2 != NULL); A2=(aReg)LoadPnt(A2+6))
+  result = NULL;
+  //pntA4 = P1;
+  //D5L = 0;
+  found_D5 = false;;
+  //for (A2=f.Pointer132; (A2 != NULL); A2=(aReg)LoadPnt(A2+6))
+  for (pS16_A2=f.handleList_132; (pS16_A2 != NULL); pS16_A2=pS16_A2->pNext_6)
   {
-    if (wordGear(A2+12) >= wordGear(A2+10)) continue;
-    D6W = wordGear(A2+14);
-    A3 = A2 + (UI16)(4*D6W) + 16;
-    for (D7W = wordGear(A2+10); D7W-- != 0; D6W++, A3+=4)
+    //if (wordGear(pS16_A2+12) >= wordGear(pS16_A2+10)) continue;
+    if (pS16_A2->numHandlesAllocated_12 >= pS16_A2->maxNumHandles_10) continue;
+    //D6W = wordGear(pS16_A2+14);
+    D6W = pS16_A2->startingSearchIndex_14;
+    //A3 = pS16_A2 + (UI16)(4*D6W) + 16;
+    result = (ui8 **)((ui8 *)pS16_A2 + (UI16)(D6W*sizeof(ui8 *)) + sizeof(*pS16_A2));
+    //for (D7W = wordGear(pS16_A2+10); D7W-- != 0; D6W++, A3+=4)
+    for (D7W = pS16_A2->maxNumHandles_10; D7W-- != 0; D6W++, result++)
     {
-      if (wordGear(A2+10) == 0)
+      /* ***************************************************************
+       * 
+       *              NOTE:   PRS    20180424
+       *  
+       *  This appears to have mis-translated.
+       *  The source code says:
+       *      CMP.W    10(A2),D6
+       *
+       *  It was mis-tranlated to
+       *      if ((wordGear(pS16_A2+10) == 0)
+       *
+       ***************************************************************** */
+      //if (wordGear(pS16_A2+10) == 0)
+      if (pS16_A2->maxNumHandles_10 == D6W)  // See Note above!
       {
         D6L = 0;
-        A3 = A2 + 16;
+        //A3 = pS16_A2 + 16;
+        result = (ui8 **)((ui8 *)pS16_A2 + sizeof(*pS16_A2));
       };
-      if (A3 == NULL)
+      /* ******************************************************************
+       *
+       *  Notes:  20180423  PRS
+       *  This was translated improperly in the original translations
+       *  The assemply code said 
+       *       TEST.L    (A3)
+       *  But it was translated as 'if (A3 == NULL)'  rather than 'if (LoadLong(A3) == 0)'
+       *
+       ********************************************************************* */
+      //if (A3 == NULL) //WRONG!  WRONG!   See Note immediately above
+      if (*result == NULL)
       {
-        wordGear(A2+14) = D6W;
-        wordGear(A2+12)++;
-        D5L = 1;
+        //wordGear(pS16_A2+14) = D6W;
+        pS16_A2->startingSearchIndex_14 = D6W;
+        //wordGear(pS16_A2+12)++;
+        pS16_A2->numHandlesAllocated_12++;
+        //D5L = 1;
+        found_D5 = true;
         break;
       };
 //
     };
-    if (D5W != 0) break;
-//
-//
+    //if (D5W != 0) break;
+    if (found_D5) break;
   };
-  if (D5W == 0)
+  //if (D5W == 0)
+  if (!found_D5)
   {
-    A2 = TAG003c50(f.Word128);
-    if (A2 != NULL)
+    NotImplemented(0x3cf7);
+    //A2 = TAG003c50(f.Word128);
+    pS16_A2 = NewHandleBlock(f.Word128);
+    if (pS16_A2 != NULL)
     {
-      A3 = A2 + 16;
-      wordGear(A2+12)++;
-      D5L = 1;
+      result = (ui8 **)((ui8 *)pS16_A2 + sizeof(pS16_A2));
+      //wordGear(A2+12)++;
+      pS16_A2->numHandlesAllocated_12++;
+      //D5L = 1;
+      found_D5 = true;
     };
   };
-  if (D5W == 0)
+//#ifdef imp3cf6
+  //if (D5W == 0)
+  if (!found_D5)
   {
-    A3 = NULL;
+    result = NULL;
   };
-  *pntA4 = A2;
-  return A3;
+  //*pntA4 = pS16_A2;
+  *P1 = pS16_A2;
+  return OBJECT_HANDLE(result);
+//#else
+//  NotImplemented(0x3cf6);
+//  return NULL;
+//#endif
+
 }
 
 // *********************************************************
 //
 // *********************************************************
-void  TAG003d9e(pnt P1)
+void  TAG003d9e(pnt /*P1*/)
 {
+#ifdef imp3d9e
   aReg A3, A4;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   A4 = P1;
-  for (A3 = (aReg)f.Pointer132; A3 != NULL; A3 = (aReg)LoadPnt(A3+6))
+  for (A3 = (aReg)f.handleList; A3 != NULL; A3 = (aReg)LoadPnt(A3+6))
   {
     if (A3 > A4) continue;
     if (A4 >= A3 + 20 + 4*(UI16)(wordGear(A3+10))) continue;
@@ -3100,20 +3596,29 @@ void  TAG003d9e(pnt P1)
 //
 //
   };
+#else
+  NotImplemented(0x3d9e);
+  return ;
+#endif
+
 }
 
 // *********************************************************
 //
 // *********************************************************
-S18 *TAG003df0(S12 * P1)
+//MEMORY_S18 *TAG003df0(S12 * P1)
+MEMORY_S18 *FindSuitableHeap(OBJECT_DEF * P1)
 {
-  dReg D0, D1, D3, D4, D5, D6, D7;
-  aReg A0;
-  S18  *s18A2, *s18A3;
-  S12  *s12A4;
+  //dReg D0, D1, D3, D4, D5, D6, D7;
+  dReg D0, D1, D3, D4, D6, D7;
+  ui32 requestedSize_D5;
+  //aReg A0;
+  MEMORY_BLOCK_HEADER *pUnusedMemoryBlockHeader_A0;
+  MEMORY_S18  *s18A2, *s18A3;
+  OBJECT_DEF  *s12A4;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   s12A4 = P1;
-  if (s12A4->w4 & 1)
+  if (s12A4->memType_4 & 1)
   {
     D7L = 1;
     s18A3 = &f.s18_124[0]; // The first one
@@ -3121,35 +3626,41 @@ S18 *TAG003df0(S12 * P1)
   else
   {
     D7L = -1;
-    s18A3 = &f.s18_124[f.Word126 - 1];//The last one.
+    s18A3 = &f.s18_124[f.numHeap_126 - 1];//The last one.
   };
-  D5L = s12A4->i0;
+  //D5L = s12A4->i0;  // requested number of bytes
+  requestedSize_D5 = s12A4->allocatedSize_0;  // requested number of bytes
   s18A2 = s18A3;
-tag003e26:
+//tag003e26:
   D3L = 0;
   D4L = 0;
-  for (D6L=0; D6W<f.Word126; D6W++, s18A3+=D7W)
+  for (D6L=0; D6W<f.numHeap_126; D6W++, s18A3+=D7W)
   {
-    D0W = sw(s18A3->w4 & s12A4->w4);
-    D1W = (I16)(s12A4->w4 & 0x7f8);
-    if (D0W != D1W) continue;
-    D4L = 1;
-    A0 = s18A3->pnt10;
-    D0L = LoadLong(A0) & 0x7fffffff;
-    if (D0L < D5L) continue;
-    D3L = 1;
+    D0W = sw(s18A3->m_memType_4 & s12A4->memType_4);  // memory type
+    D1W = (I16)(s12A4->memType_4 & 0x7f8);
+    if (D0W != D1W) continue;         // is memory type allowed
+    D4L = 1;                          // requested memory type found
+    //A0 = s18A3->pnt10;
+    pUnusedMemoryBlockHeader_A0 = s18A3->m_pFirstAvailBlock_10;
+    //D0L = LoadLong((pnt)pUnusedMemoryBlockHeader_A0) & 0x7fffffff;
+    D0L = pUnusedMemoryBlockHeader_A0->usableSize & 0x7fffffff;
+    //if (D0L < D5L) continue;
+    if ((ui32)D0L < requestedSize_D5) continue;
+    D3L = 1;    // request can be satisfied
     break;
 //
 //
   };
-  if (D4W == 0)
+  if (D4W == 0)  // If  memory type not found.
   {
-    TAG00189c(1, 0x010d0005, (char *)((int)(UI16)(s12A4->w4)));
+    //TAG00189c(1, 0x010d0005, (char *)((int)(UI16)(s12A4->w4)));
+    ErrorCondition(1, 0x010d0005, (uintptr_t)s12A4->memType_4);
   };
-  if (D3W == 0)
+  if (D3W == 0)  // if request is not satisfied
   {
+#ifdef imp3df0
     for (s18A3 = s18A2, D6L = 0;
-         D6W < f.Word126;
+         D6W < f.numHeap_126;
          D6W++, s18A3 += D7W)
     {
       D0W = (I16)(s12A4->w4 & s18A3->w4);
@@ -3159,9 +3670,10 @@ tag003e26:
       if (D0W != 0) break;  
 //
     };
-    if (D6W == f.Word126)
+    if (D6W == f.numHeap_126)
     {
-      D0L = TAG00189c(0, 0x010d0001, (char *)((int)(UI16)(s12A4->w4)));
+      //D0L = TAG00189c(0, 0x010d0001, (char *)((int)(UI16)(s12A4->w4)));
+      D0L = ErrorCondition(0, 0x010d0001, (uintptr_t)s12A4->w4);
       if (D0L == 0x0102fffe)
       {
         s18A3 = s18A2;
@@ -3169,160 +3681,293 @@ tag003e26:
       };
       s18A3 = NULL;
     };
+#else
+  NotImplemented(0x3df0);
+  return NULL;
+#endif
   };
   return s18A3;
+
+
 }
 
 // *********************************************************
 //
 // *********************************************************
-pnt TAG003efc(i32 P1, i16 P2, S18 *P3)
+//pnt TAG003efc(i32 P1, i16 P2, MEMORY_S18 *P3)
+pnt MEMORY_S18::AllocateMemoryBlock(i32 requestedSize, i16 memoryType)
 {
-  dReg D5, D6, D7;
-  aReg A0, A2, A3;
-  S18  *s18A4;
-  i16  w_2;
+  // This returns a pointer to a memory block.  The block has its
+  // size stored in the first and last 4-byte integers of the block.
+  //dReg D5, D6, D7;
+  dReg D6;
+  ui32 numBytesToAllocate_D7;
+  ui32 numBytesInBlock_D5;
+  //aReg A0, A2, A3;
+  aReg A0;
+  MEMORY_BLOCK_HEADER *pUnusedMemoryBlockHeader_A3;
+  MEMORY_BLOCK_HEADER *pUnusedMemoryBlockHeader_A2;
+  //MEMORY_S18  *s18A4;
+  //i16  w_2;
+  i16  perfectFit;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  D7L = P1;
-  D6W = P2;
-  s18A4 = P3;
-  A3 = TAG003788(D7L, s18A4, &w_2);
-  if (A3 != NULL)
-  {
-    TAG00364c(A3, s18A4);
-    D5L = LoadLong(A3) & 0x7fffffff;
-    if (w_2 != 0)
+  numBytesToAllocate_D7 = requestedSize;
+  D6W = memoryType;
+  //s18A4 = P3;
+  //A3 = TAG003788(D7L, s18A4, &w_2);
+  pUnusedMemoryBlockHeader_A3 = FindSuitableBlock(numBytesToAllocate_D7, this, &perfectFit);
+  if (pUnusedMemoryBlockHeader_A3 != NULL)
+  { 
+    UnlinkMemoryBlock(pUnusedMemoryBlockHeader_A3);
+//#ifdef imp3efc
+    //D5L = LoadLong(pUnusedMemoryBlockHeader_A3) & 0x7fffffff;
+    numBytesInBlock_D5 = pUnusedMemoryBlockHeader_A3->usableSize & 0x7fffffff;
+    if (perfectFit)
     {
-      D7L = D5L;
+      numBytesToAllocate_D7 = numBytesInBlock_D5;  // Allocate them all!
     }
-    else
+    else  
     {
-      D5L -= D7L;
+      numBytesInBlock_D5 -= numBytesToAllocate_D7; // Number of usable bytes remaining after allocation
+                                           // Make the available block smaller by #bytes allocated
       if (D6L & 1)
-      {
-        A2 = A3 + D7L;
+      { // Memory type = 'Allocate starting from last heap'
+        pUnusedMemoryBlockHeader_A2 = (MEMORY_BLOCK_HEADER *)
+                         ((ui8 *)pUnusedMemoryBlockHeader_A3 + numBytesToAllocate_D7);
+        // 
       }
       else
-      {
-        A2 = A3;
-        A3 += D5L;
+      { // Memory type = 'Allocate starting from first heap'
+        pUnusedMemoryBlockHeader_A2 = pUnusedMemoryBlockHeader_A3;
+        pUnusedMemoryBlockHeader_A3 = 
+              (MEMORY_BLOCK_HEADER *)
+                   ((ui8 *)pUnusedMemoryBlockHeader_A3 + numBytesInBlock_D5);
       };
-      TAG0036e4(A2, D5L, s18A4);
+      AddMemoryBlock(pUnusedMemoryBlockHeader_A2, numBytesInBlock_D5);
     };
-    s18A4->i14 -= D7L;
-    StoreLong(A3, D7L);
-    A0= A3 + D7L;
-    StoreLong(A0-4, D7L);
+    m_i14 -= numBytesToAllocate_D7;
+    //StoreLong(pUnusedMemoryBlockHeader_A3, D7L);
+    pUnusedMemoryBlockHeader_A3->usableSize = numBytesToAllocate_D7;
+    A0 = (pnt)pUnusedMemoryBlockHeader_A3 + numBytesToAllocate_D7;
+    //StoreLong(A0-4, D7L);
+    *((ui32 *)A0 - 1) =  numBytesToAllocate_D7;
+//#else
+//    NotImplemented(0x3efc);
+//    return NULL;
+//#endif
   };
-  return A3;
-}
-
-// *********************************************************
-//
-// *********************************************************
-pnt TAG003f82(S12 *P1)
-{
-  dReg D7;
-  aReg A0, A2, A3;
-  S12 *s12A4;
-  pnt   pnt_8;
-  S18   *ps18_4;
-//;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  s12A4 = P1;
-  D7L = (UI16)(s12A4->w6) + s12A4->i0 + 18;
-  if (D7L & 1) D7L++;
-  s12A4->i0 = D7L;
-  A2 = TAG003cf6(&pnt_8);
-  if (A2 == NULL) return NULL;
-  ps18_4 = TAG003df0(s12A4);
-  if (ps18_4 == NULL) goto tag004038;
-  A3 = TAG003efc(D7L, s12A4->w4, ps18_4);
-  if (A3 == NULL) goto tag004038;
-  StorePnt(A2, A3 + (UI16)(s12A4->w6) + 14);  
-  A3[4] = 0;
-  A3[5] = (I8)(s12A4->w4 & 7);
-  wordGear(A3+10) = s12A4->w4;
-  StorePnt(A3+6, A2);
-  A3 += 12;
-  if ((s12A4->pnt8 != NULL) && (s12A4->w6 != 0) )
   {
-    (s12A4->pnt8)(A3);
+    // Added 20180427 PRS
+    // Clear the block to 0xce
+    ui32 size = pUnusedMemoryBlockHeader_A3->usableSize;
+    size -= 2*sizeof(pUnusedMemoryBlockHeader_A3->usableSize);
+    ui8 *start = (ui8 *)pUnusedMemoryBlockHeader_A3+sizeof (pUnusedMemoryBlockHeader_A3->usableSize);
+    memset(start, 0xce, size);
   };
-  A0 = A3 + (UI16)(s12A4->w6);
-  wordGear(A0) = s12A4->w6;
-  return A2;
-tag004038:
-  A0 = pnt_8;
-  wordGear(A0+12) -= 1;
-  return NULL;
+  return (pnt)pUnusedMemoryBlockHeader_A3;
+}
+
+// *********************************************************
+//
+// *********************************************************
+//pnt TAG003f82(MEMORY_REQUEST_S12 *P1)
+OBJECT_HANDLE NewObject(OBJECT_DEF *pObjDef)
+{
+  // P1 structure is always like this:
+  //   i0 = size1    eg 1024
+  //   w4 = size2    eg 129
+  //   w6 = 0
+  //   pnt8 = NULL
+
+  dReg D7;
+  //aReg A0, A2, A3;
+  //aReg A0;
+  OBJECT_HANDLE objectHandle_A2;
+  OBJECT_HEADER *pObjHead_A3;
+  //OBJECT_DEF *s12A4;
+  //pnt   pnt_8;
+  HANDLE_LIST_HEADER_S16  *pnt_8;
+  MEMORY_S18   *ps18_4;
+//;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  //s12A4 = P1;
+  //D7L = (UI16)(s12A4->w6) + s12A4->i0 + 18;
+  //D7L = (UI16)(pObjDef->objectPreambleSize_6) + pObjDef->allocatedSize_0 + 18;
+  D7L =     pObjDef->allocatedSize_0
+         +  (UI16)(pObjDef->objectPreambleSize_6) 
+         +  sizeof(OBJECT_HEADER)
+         +  sizeof(ui16)        // The word that will contain the preable size
+         +  sizeof(ui32);       // The (trailing) 32-bit word
+                                //   containing the memory block size
+  if (D7L & 1) D7L++;
+  pObjDef->allocatedSize_0 = D7L;
+  //A2 = TAG003cf6(&pnt_8);
+  objectHandle_A2 = NewObjectHandle(&pnt_8);
+  if (objectHandle_A2 == NULL) return OBJECT_HANDLE();
+  //ps18_4 = TAG003df0(s12A4);
+  ps18_4 = FindSuitableHeap(pObjDef);
+//  if (ps18_4 == NULL) goto tag004038;
+//#ifdef imp3f82
+  if (ps18_4 != NULL)
+  {
+    //A3 = AllocateMemoryBlock(D7L, s12A4->w4, ps18_4);
+    pObjHead_A3 = (OBJECT_HEADER *)ps18_4->AllocateMemoryBlock(D7L, pObjDef->memType_4);
+    //if (A3 == NULL) goto tag004038;
+    if (pObjHead_A3 != NULL)
+    {
+      //***************  OBJECT Header structure ****************
+      //    byte_4  = 0;
+      //    byte_5  = memType & 7;
+      //    pnt_6   = handle;
+      //    word_10 = memType;
+      //        preamble bytes
+      //    word    = size of preamble
+      //        data bytes
+      //    i32     = size of memory block
+      // *********************************************************
+      //StorePnt(A2, A3 + (UI16)(s12A4->w6) + 14);  
+      //*A2 = A3 + (UI16)(pObjDef->w6) + 14);  
+      {
+        // temporary construction of object's address
+        ui8 *pObj;
+        pObj = (ui8 *)pObjHead_A3;     // Convert to byte address
+        pObj += sizeof(*pObjHead_A3);
+        pObj += pObjDef->objectPreambleSize_6;
+        pObj += sizeof(ui16);   // the word containing the preamble size
+        //objectHandle_A2.SetObjectAddress(A3 + (UI16)(pObjDef->objectPreambleSize_6) + 14);  
+        objectHandle_A2.SetObjectAddress(pObj);  
+      };
+      //A3[4] = 0;
+      pObjHead_A3->byte_4 = 0;
+      //A3[5] = (I8)(pObjDef->memType_4 & 7);
+      pObjHead_A3->byte_5 = (I8)(pObjDef->memType_4 & 7);
+      //wordGear(A3+10) = pObjDef->memType_4;
+      pObjHead_A3->memType_10 = pObjDef->memType_4;
+      //StorePnt(A3+6, A2);
+//#ifdef imp123
+      //*(A3+6) = (i8)objectHandle_A2;
+      pObjHead_A3->objHandle_6 = objectHandle_A2;
+//#else
+//      NotImplemented(0x123);
+//#endif
+      {
+        // temporary computation of preamle address
+        //A3 += 12;
+        ui8 *pPreamble;
+        pPreamble = (ui8 *)pObjHead_A3 + sizeof(*pObjHead_A3);
+        if ((pObjDef->callbackFunction_8 != NULL) && (pObjDef->objectPreambleSize_6 != 0) )
+        {
+          //(pObjDef->callbackFunction_8)(A3);
+          (pObjDef->callbackFunction_8)((pnt)pPreamble);
+        };
+      };
+      {
+        // Temporary computation of pointer to word containing preamble size
+        ui8 *pSize;
+        pSize = (ui8 *)(pObjHead_A3);
+        pSize += sizeof(*pObjHead_A3);
+        pSize += pObjDef->objectPreambleSize_6;
+        //A0 = A3 + (UI16)(pObjDef->objectPreambleSize_6);
+        //wordGear(A0) = pObjDef->objectPreambleSize_6;
+        *(ui16 *)(pSize) = pObjDef->objectPreambleSize_6;
+      };
+      return objectHandle_A2;
+    };
+  };
+//tag004038:
+  //A0 = (aReg)pnt_8;
+  //wordGear(A0+12) -= 1;
+  pnt_8->numHandlesAllocated_12 -= 1;
+  return OBJECT_HANDLE();
+//#else
+//  NotImplemented(0x3f82);
+//  return NULL;
+//#endif
 
 }
 
 // *********************************************************
 //
 // *********************************************************
-void TAG00404c(pnt P1, S18 *P2)
+void TAG00404c(pnt P1, MEMORY_S18 *P2)
 {
   dReg D7;
   aReg A4;
-  S18 *s18A3;
+  MEMORY_S18 *s18A3;
 //;;;;;;;;;;;;;;;;;;;;
   A4 = P1;
   s18A3 = P2;
   D7L = LoadLong(A4);
-  s18A3->i14 += D7L;
+  s18A3->m_i14 += D7L;
   TAG003720(A4, D7L, s18A3);
 }
 
 // *********************************************************
 //
 // *********************************************************
-i16 TAG004078(i16 P1,i16 P2)
+i16 AllocateHeap(i16 P1, i16 P2) //TAG004078(i16 P1,i16 P2)
 { // Initialize heap..
   dReg D5, D7;
   aReg A0, A4;
-  S18 *s18A3;
+  MEMORY_S18 *s18A3;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   D7L = 300000;
   A4 = (aReg)MALLOC(D7L);
   if (A4 == NULL)
   {
-    TAG00189c(1, 0x010d000b, "ERR No system memory");
+    //TAG00189c(1, 0x010d000b, "ERR No system memory");
+    ErrorCondition(1, 0x010d000b, (uintptr_t)"ERR No system memory");
   };
-  f.Pointer136 = A4;
-  if ((i32)A4 & 1) {A4++; D7L--;};
+  f.pHeap_136 = A4;
+  //if ((i32)A4 & 1) {A4++; D7L--;};
+  if ((uintptr_t)A4 & 1) {A4++; D7L--;};
   D7L &= -2;
-  f.Word126 = 1;
-  f.s18_124[0].pnt0 = A4;
-  f.s18_124[0].i6 = D7L;
-  f.s18_124[0].w4 = 2040;
+  f.numHeap_126 = 1;
+  f.s18_124[0].m_pFirstBlock_0 = (MEMORY_BLOCK_HEADER *)A4;
+  f.s18_124[0].m_i6 = D7L;
+  f.s18_124[0].m_memType_4 = 0x7f8; // 2040;
 //
   for (D5L = 0, s18A3 = &f.s18_124[0];
-       D5W < f.Word126;
-       D5W++, s18A3 ++)
+       D5W < f.numHeap_126;
+       D5W++, s18A3++)
   {
-    A4 = s18A3->pnt0;
-    StorePnt(A4, NULL);
-    A0 = A4 + s18A3->i6;
-    StorePnt(A0-4, NULL);
-    A4 += 4;
-    s18A3->pnt0 = A4;
-    s18A3->i6 -= 8;
-    s18A3->i14 = s18A3->i6;
-    s18A3->pnt10 = NULL;
-    TAG0036e4(A4, s18A3->i14, s18A3);
+    // Memory
+    //                            pointer (== NULL)
+    // S18_124->firstBlock_0 -->  lots of bytes
+    //                            pointer (== NULL)
+    //
+    // S18_124[0]
+    //    firstBlock_0 points to usable bytes in 300000-byte memory area
+    //    i6     
+
+    A4 = (aReg)s18A3->m_pFirstBlock_0;
+    //StorePnt(A4, NULL);                 
+    *(ui8 **)A4 = NULL;                 
+    A0 = A4 + s18A3->m_i6;
+    //StorePnt(A0-4, NULL);
+    *(ui8 **)(A0-sizeof(ui8 **)) = NULL;
+    //A4 += 4;
+    A4 += sizeof(ui8 *);
+    s18A3->m_pFirstBlock_0 = (MEMORY_BLOCK_HEADER *)A4;
+    //s18A3->i6 -= 8;
+    s18A3->m_i6 -= 2 * sizeof(ui8 *);
+    s18A3->m_i14 = s18A3->m_i6;
+    //s18A3->pnt10 = NULL;
+    s18A3->m_pFirstAvailBlock_10 = NULL;
+    s18A3->AddMemoryBlock((MEMORY_BLOCK_HEADER *)A4, s18A3->m_i14); //(&firstUsableByte, #usableBytes, &blockDesc)
 //
 //
 //
   };
   f.Word128 = P2;
-  f.Pointer132 = NULL;
-  A0 = TAG003c50(P1);
+  f.handleList_132 = NULL;
+  //A0 = (aReg)TAG003c50(P1);
+  A0 = (aReg)NewHandleBlock(P1);
   if (A0 == NULL)
   {
-    TAG00189c(1, 0x010d000b, "ERR Can't allocate first Handle block");
+    ErrorCondition(1, 0x010d000b, (uintptr_t)"ERR Can't allocate first Handle block");
   };
   return 0;
+
 }
 
 // *********************************************************
@@ -3331,38 +3976,46 @@ i16 TAG004078(i16 P1,i16 P2)
 void TAG00418a(void)
 {
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  MFREE((ui8 *)f.Pointer136);
+  MFREE((ui8 *)f.pHeap_136);
 }
 
 // *********************************************************
 //
 // *********************************************************
-pnt TAG00419a(i32 P1,i16 P2)
+//pnt TAG00419a(i32 size,i16 type) // example (1024, 129)
+OBJECT_HANDLE TAG00419a(i32 size,i16 type) // example (1024, 129)
 {
-  S12 s12;
+  OBJECT_DEF s12;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  s12.i0 = P1;
-  s12.w4 = P2;
-  s12.w6 = 0;
-  s12.pnt8 = 0;
-  return TAG003f82(&s12);
+  s12.allocatedSize_0 = size;
+  s12.memType_4 = type;
+  s12.objectPreambleSize_6 = 0;
+  s12.callbackFunction_8 = NULL;
+  //return TAG003f82(&s12);
+  return NewObject(&s12);
 //  
 }
 
 // *********************************************************
 //
 // *********************************************************
-i32 TAG0041c8(pnt P1)
+//i32 TAG0041c8(pnt P1)
+i32 TAG0041c8(OBJECT_HANDLE P1)
 {
   dReg D7;
-  aReg A3, A4;
+  //aReg A3, A4;
+  //aReg A3;
+  OBJECT_HANDLE objHandle_A4;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  A4 = P1;
-  D7L = TAG004316(A4);
+  //A4 = P1;
+  objHandle_A4 = P1;
+  //D7L = TAG004316(A4);
+  D7L = TAG004316(objHandle_A4);
+#ifdef imp41c8
   if (D7L == 0)
   {
-    A3 = TAG0035e6(A4);
-    TAG00404c(A3, TAG00360a(A3));
+    A3 = LocateObjectHeader(A4);
+    TAG00404c(A3, LocateMemoryHeap(A3));
   };
   if ( (D7L == 0) || (D7L==0x010d0003) )
   {
@@ -3370,63 +4023,97 @@ i32 TAG0041c8(pnt P1)
     D7L = 0;
   };
   return D7L;
+#else
+  return 0;
+#endif
 }
 
 // *********************************************************
 //
 // *********************************************************
-pnt TAG00421e(pnt P1)
+//pnt TAG00421e(pnt /*P1*/)
+pnt TAG00421e(OBJECT_HANDLE P1)
 {
+//#ifdef imp421e
   dReg D7;
-  aReg A2, A3, A4;
+  //aReg A2, A3, A4;
+  aReg A2;
+  OBJECT_HANDLE objHand_A4;
+  OBJECT_HEADER *pHeader_A3;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  A4 = P1;
+  //A4 = P1;
+  objHand_A4 = P1;
   A2 = NULL;
-  D7L = TAG004316(A4);//Check legal address
+  //D7L = TAG004316(A4);//Check legal address
+  D7L = TAG004316(objHand_A4);//Check legal address
   if (D7L == 0)
   {
-    A3 = TAG0035e6(A4);
-    A3[4]++;
-    A2 = (aReg)LoadPnt(A4);
+    //A3 = TAG0035e6(A4);
+    pHeader_A3 = LocateObjectHeader(objHand_A4);
+    //A3[4]++;
+    pHeader_A3->byte_4++;
+    //A2 = (aReg)LoadPnt(A4);
+    //A2 = (aReg)LoadPnt(objHand_A4);
+    A2 = (aReg)objHand_A4.GetObjectAddress();
   };
   return A2;
+//#else
+//  NotImplemented(0x421e);
+//  return NULL;
+//#endif
+
 }
 
 // *********************************************************
 //
 // *********************************************************
-void TAG004254(pnt P1)
+//void TAG004254(pnt P1)
+void TAG004254(OBJECT_HANDLE P1)
 {
-  aReg A3;
+  //aReg A3;
+  OBJECT_HEADER *pHeader_A3;
+  NotImplemented(0x4254);
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  A3 = TAG0035e6(P1);
-  A3[4]--;
+  pHeader_A3 = LocateObjectHeader(P1);
+  //A3[4]--;
+  pHeader_A3->byte_4--;
 }
 
 // *********************************************************
 //
 // *********************************************************
-i32 TAG004316(pnt P1)
+//i32 TAG004316(pnt /*P1*/)
+i32 TAG004316(OBJECT_HANDLE P1)
 {
+//#ifdef imp4316
   dReg D7;
-  aReg A3, A4;
+  //aReg A3, A4;
+  OBJECT_HANDLE pObjHand_A4;
+  OBJECT_HEADER *pHeader_A3;
   D7L = 0x1baddade;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  A4 = P1;
-  if ( (A4 == NULL) || (LoadPnt(A4) == NULL) )
+  //A4 = P1;
+  pObjHand_A4 = P1;
+  //if ( (A4 == NULL) || (LoadPnt(A4) == NULL) )
+  if ( (pObjHand_A4 == NULL) || (pObjHand_A4.GetObjectAddress() == NULL) )
   {
-    TAG00189c(1, 0x010d0002, (char *)A4);
+    //TAG00189c(1, 0x010d0002, (char *)A4);
+    //ErrorCondition(1, 0x010d0002, (uintptr_t)A4);
+    ErrorCondition(1, 0x010d0002, (uintptr_t)pObjHand_A4.GetPointer());
   }
   else
   {
-    if (LoadLong(A4) == -1)
+    //if (LoadLong(A4) == -1)
+    if (pObjHand_A4.GetObjectAddress() == (void *)-1)
     {
       D7L = 0x010d0003;
     }
     else
     {
-      A3 = TAG0035e6(A4);
-      if (TAG00360a(A3) == NULL)//is address in one of memory areas
+      //A3 = TAG0035e6(A4);
+      //A3 = LocateObjectHeader(pObjHand_A4);
+      pHeader_A3 = LocateObjectHeader(pObjHand_A4);
+      if (LocateMemoryHeap((pnt)pHeader_A3) == NULL)//is address in one of memory areas
       {
         D7L = 0x010d0002;
       }
@@ -3437,6 +4124,11 @@ i32 TAG004316(pnt P1)
     };
   };
   return D7L;
+//#else
+//  NotImplemented(0x4316);
+//  return 0;
+//#endif
+
 }
 
 
@@ -3610,43 +4302,52 @@ RESTARTABLE _DisplayText(const i16 P1, const TEXT *nP2)
 // *********************************************************
 //
 // *********************************************************
-pnt TAG004a22_14(i16 P1)
+//TAG004a22_14(i16 P1)
+TEXT *TAG004a22_14(i16 P1)
 {//(pnt)
   union 
         {
           i32 i;
           TEXT *pText;
-          pnt p;
+          //pnt p;
+          TEXT *p;
         } r_4;
   r_4.i = 0x1baddade;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   //TAG009a02(9, P2);
-  r_4.p = AssignMemory(P1, 22);
-  wordGear(r_4.p) = 3;
+  //r_4.p = AssignMemory(P1, 22);
+  r_4.p = (TEXT *)AssignMemory(P1, sizeof(TEXT));
+  //wordGear(r_4.p) = 3;
+  r_4.p->w0 = 3;
   //TAG009a1c(9, P2);
-  return ((pnt)r_4.i);
+  //return ((pnt)r_4.i);
+  return (r_4.p);
 }
 
 // *********************************************************
 //
 // *********************************************************
-pnt TAG004a22_16(i16 P1, i32 nP2)
+//pnt TAG004a22_16(i16 P1, i32 nP2)
+//pnt TAG004a22_16(i16 P1, uintptr_t nP2)
+TEXT *TAG004a22_16(i16 P1, uintptr_t nP2)
 {//(pnt)
   TEXT *pTextP3;
   union 
         {
           i32 i;
           TEXT *pText;
-          pnt p;
+          //pnt p;
+          TEXT *p;
         } r_4;
   r_4.i = 0x1baddade;
   pTextP3 = (TEXT *)nP2;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   //TAG009a02(9, P2);
-  r_4.pText = (TEXT *)TAG004a22_14(P1);
+  r_4.pText = TAG004a22_14(P1);
   if (nP2 != 0)
   {
-    r_4.pText->pnt2 = (char *)AssignMemory(P1, nP2);
+    //r_4.pText->pnt2 = (char *)AssignMemory(P1, nP2);
+    r_4.pText->pnt2 = (char *)AssignMemory(P1, (i32)nP2);
   };
   r_4.pText->rectPos6.x1 = rectPos14516.x1;
   r_4.pText->rectPos6.x2 = rectPos14516.x2;
@@ -3656,7 +4357,9 @@ pnt TAG004a22_16(i16 P1, i32 nP2)
   r_4.pText->w20 = 0;
   r_4.pText->w14 = 1;
   //TAG009a1c(9, P2);
-  return ((pnt)r_4.i);
+  //return ((pnt)r_4.i);
+  //return (r_4.p);
+  return (r_4.pText);
 }
 
 // *********************************************************
@@ -3691,7 +4394,8 @@ void Free_TEXT(i16 P1, TEXT *nP2)
 // *********************************************************
 //
 // *********************************************************
-void TAG004a22_26(i16 /*P1*/, i32 nP2, i32 nP3)
+//void TAG004a22_26(i16 /*P1*/, i32 nP2, i32 nP3)
+void TAG004a22_26(i16 /*P1*/, uintptr_t nP2, i32 nP3)
 {//(void)
   dReg D0;
   ui8 *A0;
@@ -3736,7 +4440,8 @@ void TAG004a22_26(i16 /*P1*/, i32 nP2, i32 nP3)
 // *********************************************************
 //
 // *********************************************************
-RESTARTABLE _TAG004e4c_xxx(i16 /*P1*/, i16 P2, i32 P3)
+//RESTARTABLE _TAG004e4c_xxx(i16 /*P1*/, i16 P2, i32 P3)
+RESTARTABLE _TAG004e4c_xxx(i16 /*P1*/, i16 P2, uintptr_t P3)
 {//(void)
   static TEXT *pTextP3;
   RESTARTMAP
@@ -3778,7 +4483,8 @@ RESTARTABLE _TAG004e4c_6(i16 P1,TEXT *P2)
   RESTARTMAP
     RESTART(1)
   END_RESTARTMAP
-  TAG004e4c_xxx(_1_, P1, 6, (i32)P2);
+  //TAG004e4c_xxx(_1_, P1, 6, (i32)P2);
+  TAG004e4c_xxx(_1_, P1, 6, (uintptr_t)P2);
   RETURN;
 }
 
@@ -3790,7 +4496,8 @@ RESTARTABLE _TAG004e4c_8(i16 P1,TEXT *P2)
   RESTARTMAP
     RESTART(1)
   END_RESTARTMAP
-  TAG004e4c_xxx(_1_, P1, 8, (i32)P2);
+  //TAG004e4c_xxx(_1_, P1, 8, (i32)P2);
+  TAG004e4c_xxx(_1_, P1, 8, (uintptr_t)P2);
   RETURN;
 }
 
@@ -3799,7 +4506,7 @@ RESTARTABLE _TAG004e4c_8(i16 P1,TEXT *P2)
 //
 // *********************************************************
 pnt TAG004f3a_1(i16 /*P1*/)
-{//(pnt)
+{//  The only caller of this function ignores the return value.
   i16   w_10;
   pnt   pnt_4 = NULL;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -3812,7 +4519,7 @@ pnt TAG004f3a_1(i16 /*P1*/)
 //
 //
   };
-    TAG004078(100, 50);
+    AllocateHeap(100,50); //TAG004078(100, 50);
   //TAG009a1c(15, P2);
   return (pnt_4);
 }
@@ -3885,7 +4592,9 @@ pnt AssignMemory(i16 /*P1*/, i32 nP2)
 pnt TAG004f3a_16(i16 P1, i32 nP2)
 {//(pnt)
   pnt   *pA0;
-  pnt   pnt_16;
+  //OBJECT_HANDLE   *pA0;
+  //pnt   pnt_16;
+  OBJECT_HANDLE   objHand_16;
   pnt   pnt_4 = NULL;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   //TAG009a02(15, P2);
@@ -3895,16 +4604,26 @@ pnt TAG004f3a_16(i16 P1, i32 nP2)
     /*
 */
   };
-  pnt_16 = TAG00419a(nP2, 1024);
-  if (pnt_16 == NULL)
+//#ifdef imp4f3a
+  //pnt_16 = (pnt)TAG00419a(nP2, 1024);
+  objHand_16 = TAG00419a(nP2, 1024);
+//#else
+//  NotImplemented(0x4f3a);
+//#endif
+  //if (pnt_16 == NULL)
+  if (objHand_16 == NULL)
   {
     TAG0093a0_18(P1, 45);
   };
-  pnt_4 = TAG00421e(pnt_16);
+  //pnt_4 = TAG00421e(pnt_16);
+  pnt_4 = TAG00421e(objHand_16);
   pA0 = &f.Pointer9310[f.Word8910];
   *pA0 = pnt_4;
-  pA0 = &f.Pointer9710[f.Word8910];
-  *pA0 = pnt_16;
+
+  //pA0 = &f.Pointer9710[f.Word8910];
+  //*pA0 = objHand_16;
+  f.Pointer9710[f.Word8910] = objHand_16;
+
   f.Word8910 += 1;
   if (f.Word8910 > word8908)
   {
@@ -3912,6 +4631,7 @@ pnt TAG004f3a_16(i16 P1, i32 nP2)
   };
   if (f.Word8910 > 100)
   {
+    NotImplemented(0x4f3a);
     TAG0093a0_18(P1, 98);  
   };
   //TAG009a1c(15, P2);
@@ -4008,7 +4728,7 @@ RESTARTABLE _TAG0051c2_1(const i16 P1)
   TAG005d98();
   TAG004f3a_1(14);
   TAG00187e();
-  TAG000f50(10);
+  InitializeFileDescriptors(10);
   D0L = TAG001896();// **019b52
   if (D0L != 0)
   {
@@ -4016,7 +4736,7 @@ RESTARTABLE _TAG0051c2_1(const i16 P1)
   };
   for (w_48 = 0; w_48<3; w_48++)
   {
-    TAG0076a0_12(_5_, P1, pointer8858[3], 0);// **019b80 "hcsb.dat"
+    TAG0076a0_12(_5_, P1, (uintptr_t)pointer8858[3], 0);// **019b80 "hcsb.dat"
     D0L = intResult;
     if (D0L == 1) break;  //check
 //
@@ -4026,7 +4746,7 @@ RESTARTABLE _TAG0051c2_1(const i16 P1)
   {
     TAG0093a0_18(P1, 12);
   };
-  i_52 = TAG002c5e(pointer8858[3], f.Byte16896, 0);//read index of HCSB
+  i_52 = TAG002c5e(pointer8858[3], &f.datIndex_16896, 0);//read index of HCSB
   if (i_52 != 0)
   {
     //TAG0093a0_18(_29_, P1, i_52);
@@ -4064,7 +4784,8 @@ RESTARTABLE _TAG0051c2_1(const i16 P1)
   pkt_18.w10 = 273;
   pkt_18.w12 = 2;
   pkt_18.w14 = 7;
-  PaletteFade(_19_, 14,&pkt_18);
+  //PaletteFade(_19_, 14,&pkt_18);
+  PaletteFade(_19_, 14,(uintptr_t)&pkt_18);
   TAG002a5a(0);
   f.Pointer16506[0] = (pnt)logbase();
   f.Pointer16506[1] = AssignMemory(6, 33024);
@@ -4072,14 +4793,21 @@ RESTARTABLE _TAG0051c2_1(const i16 P1)
   f.Word16498 = 1;
   if (f.Pointer16506[f.Word16498] != NULL)
   {
+    uintptr_t temp;
     pntA0 = &f.Pointer16506[f.Word16498];
-    //pA1 = &f.Pointer16506[f.Word16498];
-    //pA2 = &f.Pointer16506[f.Word16498];
-    D0L = 256;
-    D0L -= (i32)(*pntA0);
-    D0L &= 255;
-    D0L += (i32)(*pntA0);
-    *pntA0 = (pnt)D0L;//round up to multiple of 256.
+    ////pA1 = &f.Pointer16506[f.Word16498];
+    ////pA2 = &f.Pointer16506[f.Word16498];
+    //D0L = 256;              ;                              eg: pointer = 0x01234567
+    temp = 256;
+    //D0L -= (i32)(*pntA0);   ; 256 - pointer                              0xfedcbb99
+    temp -= (uintptr_t)*pntA0;
+    //D0L &= 255;             ; (256 - pointer) & 0xff                     0x00000099
+    temp &= 255;
+    //D0L += (i32)(*pntA0);   ; ((256 - pointer) & 0xff) + pointer;        0x00000100
+    temp += (uintptr_t)*pntA0;
+    //// in my opinion, the result is 256!
+    //*pntA0 = (pnt)D0L;
+    *pntA0 = (pnt)temp;
   };
   pntA0 = &f.Pointer16506[f.Word16498];
   f.Pointer12798 = *pntA0;
@@ -5048,7 +5776,7 @@ i32 TAG00686a(i16 P1)
   S4076 *s4076A4;
 //;;;;;;;;
   s4076A4 = &f.s4076_8816[P1];
-  f.Word664 = TAG00101c();
+  f.Word664 = FindUnusedFileDescriptor();
   if (f.Word664 == -1)
   {
     i_18 = 83;
@@ -5068,7 +5796,7 @@ i32 TAG00686a(i16 P1)
         TAG006718(P1);
         {
           i32 size;
-          i32 file = FindFileDescriptor(f.Word664)->fileHandle; 
+          i32 file = FindFileDescriptor(f.Word664)->fileHandle_2; 
           if (file < 0) break;
           size = ReadExtendedFeatures(file);
           //RC4_prepare_key((unsigned char *)hintKey,8);
@@ -5142,7 +5870,7 @@ i32 TAG00686a(i16 P1)
     };
   };
   UI_MessageBox("Cannot read SaveFile\nPerhaps not Utilized",
-                "SAVE FILE ERROR",
+                TranslateLanguage("SAVE FILE ERROR"),
                 MESSAGE_OK|MESSAGE_ICONERROR);
   UI_Die(0xa8a7);
   TAG001064(f.Word664);
@@ -5161,7 +5889,8 @@ pnt TAG006bc0(i32 P1)
   pnt_4 = AssignMemory(17, P1);
   if (pnt_4 == NULL)
   {
-    TAG0093a0_18(17, (i32)"get mem");
+    //TAG0093a0_18(17, (i32)"get mem");
+    TAG0093a0_18(17, (uintptr_t)"get mem");
     for (;;) {};
   };
   return (pnt_4);
@@ -5234,10 +5963,22 @@ void PrintHint(FILE *file, char *src, i32 numHint)
   };
 }
 
+struct PNT8   // Local to _TAG00799a_12
+{
+  ui16   word_0;
+  ui16   word_2;
+  ui32   long_4;
+  ui32   long_8;
+  i8    *pointer_12;
+};
+
+
+
 //*********************************************************
 //
 //*********************************************************
-RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5)//(i32)
+//RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5)//(i32)
+RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, uintptr_t param3, i32, pnt P5)//(i32)
 { //(i32)                   @8    @10     @12      @16    @20
   static dReg D0;
   static HCTI *pHCTiP5;
@@ -5280,14 +6021,15 @@ RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5)//(i32)
   switch (P2)
   {
   case 9:
-    switch (P3)
+    //switch (P3)
+    switch (param3)
     {
     case 501:
       TAG0078fa(pText16272[14]);
       TAG008c40_2(-1);
       DoMenu(_1_,
             //const pnt title1,        //8
-            "SELECT SAVE GAME",
+            TranslateLanguage("SELECT SAVE GAME"),
             //const pnt title2,        //12
             "",
             //const pnt opt1,          //16
@@ -5331,13 +6073,15 @@ RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5)//(i32)
             w_16 = (i16)TAG0076a0_13(20);
             if (w_16 > 1)
             {
-              D0L = (i32)pText16272[3];
+              //D0L = (i32)pText16272[3];
+              pnt_8 = (pnt)pText16272[3];
             }
             else
             {
-              D0L = (i32)pText16272[2];
+              //D0L = (i32)pText16272[2];
+              pnt_8 = (pnt)pText16272[2];
             };
-            pnt_8 = (pnt)D0L;
+            //pnt_8 = (pnt)D0L;
             TAG004e4c_6(_6_,17,pnt_8);
           }
           else
@@ -5377,7 +6121,7 @@ RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5)//(i32)
       {
         i_4 = 0;
       };
-      FDnum = TAG00101c();
+      FDnum = FindUnusedFileDescriptor();
       TAG008a62();
       if (FDnum == -1)
       {
@@ -5397,7 +6141,7 @@ RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5)//(i32)
             i16 fileHandle;
             FILE_DESCRIPTOR *pFD;
             pFD = FindFileDescriptor(FDnum);
-            fileHandle = pFD->fileHandle;
+            fileHandle = pFD->fileHandle_2;
             if (hintKey[0] != 0)
             {
               SETENCIPHERED(fileHandle,
@@ -5575,7 +6319,9 @@ RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5)//(i32)
     break;
   case 32:
     i_4 = 1;
-    if (wordGear((pnt)P3) != 12)
+    //if (wordGear((pnt)P3) != 12)
+    //if (wordGear((pnt)param3) != 12)
+    if (((PNT8 *)param3)->word_0 != 12)
     {
       i_26 = 58;
       w_16 = 1;
@@ -5585,7 +6331,9 @@ RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5)//(i32)
       TAG0078fa(pText16272[11]);
       TAG0076a0_12(_4_,
                    P1, 
-                   pointer8858[wordGear((pnt)P3+2)],
+                   //pointer8858[wordGear((pnt)P3+2)],
+                   //pointer8858[wordGear((pnt)param3+2)],
+                   pointer8858[((PNT8 *)param3)->word_2],
                    pText16272[6]);
       D0L = intResult;
       if (D0L == 0)
@@ -5596,7 +6344,7 @@ RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5)//(i32)
       else
       {
         TAG008a62();
-        FDnum = TAG00101c();
+        FDnum = FindUnusedFileDescriptor();
         if (FDnum == -1)
         {
           i_26 = 86;
@@ -5607,7 +6355,9 @@ RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5)//(i32)
           TAG0076a0_40(
                        P1,
                        f.Word664,
-                       pointer8858[wordGear((pnt)P3+2)],
+                       //pointer8858[wordGear((pnt)P3+2)],
+                       //pointer8858[wordGear((pnt)param3+2)],
+                       pointer8858[((PNT8 *)param3)->word_2],
                        -1);
           i_22 = TAG001096_2(FDnum); //OPEN file
           if (i_22 != 0)
@@ -5621,7 +6371,7 @@ RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5)//(i32)
               i16 fileHandle;
               FILE_DESCRIPTOR *pFD;
               pFD = FindFileDescriptor(FDnum);
-              fileHandle = pFD->fileHandle;
+              fileHandle = pFD->fileHandle_2;
               if (hintKey[0] != 0)
               {
                 SETENCIPHERED(fileHandle,
@@ -5629,7 +6379,9 @@ RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5)//(i32)
                               8);
               };
             };
-            SetBufferLength(FDnum, LoadLong((pnt)P3+4));//file offset
+            //SetBufferLength(FDnum, LoadLong((pnt)P3+4));//file offset
+            //SetBufferLength(FDnum, LoadLong((pnt)param3+4));//file offset
+            SetBufferLength(FDnum, ((PNT8 *)param3)->long_4);//file offset
             i_22 = FileSeek(FDnum);
             if (i_22 != 0)
             {
@@ -5640,12 +6392,18 @@ RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5)//(i32)
             {
               pnt_8 = AssignMemory(P1, 15009);
               pnt_12 = AssignMemory(P1, 5003);
+//#ifdef imp6c7e
               TAG003210(
                         FDnum,
-                        LoadLong((pnt)P3+8),//length of hint in file
-                        (pnt)LoadPnt((pnt)P3+12),//buffer address
+                        //LoadLong((pnt)P3+8),//length of hint in file
+                        //LoadLong((pnt)param3+8),//length of hint in file
+                        ((PNT8 *)param3)->long_8,//length of hint in file
+                        ((PNT8 *)param3)->pointer_12,//buffer address
                         pnt_8,  //temp buffer
                         pnt_12);//temp buffer
+//#else
+//  NotImplemented(0x6c7e);
+//#endif
               ReleaseMem(P1, (ui8 *)pnt_8);
               ReleaseMem(P1, (ui8 *)pnt_12);
               i_26 = 0;
@@ -5707,7 +6465,8 @@ RESTARTABLE _TAG006c7e_32(i16 P1, pnt P2)
   RESTARTMAP
     RESTART(1)
   END_RESTARTMAP
-  TAG006c7e_xxx(_1_, P1, 32, (i32)P2, 0x1baddade, (pnt)0x1baddade);
+  //TAG006c7e_xxx(_1_, P1, 32, (i32)P2, 0x1baddade, (pnt)0x1baddade);
+  TAG006c7e_xxx(_1_, P1, 32, P2, 0x1baddade, (pnt)0x1baddade);
   RETURN_int(intResult);
 }
 
@@ -5766,15 +6525,16 @@ i32 TAG0076a0_8(i16 P1, pnt nP2, i32 nP3)
   i32 i_14;
   i32 i_4;
   //case 0x08:
-      w_10 = TAG00101c(); //Find empty file descriptor.
+      w_10 = FindUnusedFileDescriptor(); //Find empty file descriptor.
       if (w_10 != 0)
       {
+        NotImplemented(0x76a08);
         TAG0093a0_18(P1, 90);
       };
       TAG0076a0_40(P1, w_10, (char *)nP2, nP3); //Set Filename
       D7W = sw(intResult);
       TAG007560(D7W);//set current drive/folder???
-      i_14 = TAG001096_2(w_10);
+      i_14 = TAG001096_2(w_10);  // Opens hcsb.dat
       TAG001096_10(w_10);
       TAG001064(w_10);
       if (i_14 == 0)
@@ -5836,22 +6596,23 @@ i32 TAG0076a0_13(i16 P1)
 {//(i32)
   dReg D7;
   i32 i_14;
-  i16 w_10;
+  i16 fileDescIdx_10;
   i32 i_4;
   //case 0x0d:
-  w_10 = TAG00101c(); //find empty file descriptor??
-  if (w_10 == -1)
+  fileDescIdx_10 = FindUnusedFileDescriptor(); //find empty file descriptor??
+  if (fileDescIdx_10 == -1)
   {
     TAG0093a0_18(P1, 91);
   };
-  TAG0015d6_128(w_10, 32);
-  i_14 = TAG001096_22(w_10);
+  TAG0015d6_128(fileDescIdx_10, 32);
+  i_14 = TAG001096_22(fileDescIdx_10);
   if (i_14 != 0)
   {
+    NotImplemented(0x93a08);
     TAG0093a0_18(P1, 92);
   };
-  D7W = sw(TAG00181e(w_10));
-  TAG001064(w_10);
+  D7W = sw(TAG00181e(fileDescIdx_10));
+  TAG001064(fileDescIdx_10);
   if (D7W > 2) D7W = 2;
   i_4 = D7W;
   //break;
@@ -5868,14 +6629,11 @@ void TAG0076a0_40(i32 /*P1*/, i32 nP2, const char* nP3, i32 nP4)
   //case 0x28:
    if (nP4 == -1)
    {
-
-
-
-    if (((pnt)nP3)[0] == 48) i_18 = 32;
+    if (((pnt)nP3)[0] == '0') i_18 = ' ';
     else
     {
-      if (TAG0076a0_13(20) < 2) i_18 = 32;
-      else i_18 = 33;
+      if (TAG0076a0_13(20) < 2) i_18 = ' ';
+      else i_18 = '!';
     };
   }
   else
@@ -6000,7 +6758,7 @@ RESTARTABLE _TAG00799a_6(i16 P1)
       TAG008c40_3(P1, w_14+10, 0);  
       D0W = f.HintIndices10530[w_14];
       D0L = StrLen((char *)f.Seg2Addr10546+26*D0W) + 1;
-      pText_8 = (TEXT *)TAG004a22_16(P1, D0L);
+      pText_8 = TAG004a22_16(P1, D0L);
       pText_8->w0 = 3;
       D0W = f.HintIndices10530[w_14];
       //D0W = index of hint title (0xb4 = "DEMON DIRECTOR")
@@ -6123,17 +6881,21 @@ RESTARTABLE _TAG00799a_9(i16 P1)
   RETURN;
 }
 
+
 // *********************************************************
 //
 // *********************************************************
 RESTARTABLE _TAG00799a_12(i16 P1, i32 selectedLine, i32 pageNum)
 {//(pnt)                                 P3              P4
+//#ifdef imp799a
   static dReg D0;
   static pnt  pnt_46;
   static pnt pseg2_20;
   static i16 w_14;
-  static pnt   pnt_8;
-  static i32 i_4 = 0x1baddade;
+  //static pnt   pnt_8;
+  static PNT8  *pnt_8;
+  //static i32 i_4 = 0x1baddade;
+  static pnt i_4 = (pnt)0x1baddade;
   RESTARTMAP
     RESTART(2)
     RESTART(10)
@@ -6157,24 +6919,30 @@ RESTARTABLE _TAG00799a_12(i16 P1, i32 selectedLine, i32 pageNum)
   };
   if (pageNum != 0)
   {
-    i_4 = (i32)&f.Byte12792;
+    //i_4 = (i32)&f.Byte12792;
+    i_4 = (pnt)&f.Byte12792;
     for (w_14 = 1; w_14 < pageNum; w_14++)
     {
       for (pnt_46 = (pnt)i_4; *(pnt_46++) != 0;)
       {
       };
-      i_4 = (i32)pnt_46;
+      //i_4 = (i32)pnt_46;
+      i_4 = pnt_46;
 //
 //
     };
     RETURN_pnt((pnt)i_4);
   };
   pageNum = 1;
-  pnt_8 = AssignMemory(P1, 16);
-  wordGear(pnt_8) = 12;
-  wordGear(pnt_8+2) = 2;
+  //pnt_8 = AssignMemory(P1, 16);
+  pnt_8 = (PNT8 *)AssignMemory(P1, sizeof(PNT8));
+  //wordGear(pnt_8) = 12;
+  pnt_8->word_0 = 12;
+  //wordGear(pnt_8+2) = 2;
+  pnt_8->word_2 = 2;
   // Now we set the file offset of hint data start.
-  StoreLong(pnt_8+4, f.Seg3Len10534);
+  //StoreLong(pnt_8+4, f.Seg3Len10534);
+  pnt_8->long_4 = f.Seg3Len10534;
   for (w_14=0; 
        w_14 < LE16(wordGear(pseg2_20+22))+pageNum-1;
        w_14++)
@@ -6182,12 +6950,15 @@ RESTARTABLE _TAG00799a_12(i16 P1, i32 selectedLine, i32 pageNum)
     // Now add to the file start offset the length of
     // each piece of data in front of the hint we want.
     D0L = LE16(wordGear(f.Seg3Addr10542 + 2*w_14));
-    StoreLong(pnt_8+4, LoadLong(pnt_8+4) + D0L);
+    //StoreLong(pnt_8+4, LoadLong(pnt_8+4) + D0L);
+    pnt_8->long_4 = pnt_8->long_4 + D0L;
 //
 //
   }; 
-  StoreLong(pnt_8+8, LE16(wordGear(f.Seg3Addr10542 + 2*w_14)));
-  StorePnt(pnt_8+12, f.Byte12792);
+  //StoreLong(pnt_8+8, LE16(wordGear(f.Seg3Addr10542 + 2*w_14)));
+  pnt_8->long_8 = LE16(wordGear(f.Seg3Addr10542 + 2*w_14));
+  //StorePnt(pnt_8+12, f.Byte12792);
+  pnt_8->pointer_12 = f.Byte12792;
   for (;;)
   {
     TAG006c7e_32(_2_, P1, pnt_8);
@@ -6196,9 +6967,15 @@ RESTARTABLE _TAG00799a_12(i16 P1, i32 selectedLine, i32 pageNum)
     TAG004e4c_8(_10_, 3, pText16272[9]);
   } ;
   ReleaseMem(P1, (ui8 *)pnt_8);
-  i_4 = (i32)pseg2_20;
+  //i_4 = (i32)pseg2_20;
+  i_4 = pseg2_20;
   //TAG009a1c(3,P2);
-  RETURN_pnt((pnt)i_4);
+  //RETURN_pnt((pnt)i_4);
+  RETURN_pnt(i_4);
+//#else
+//  NotImplemented(0x799a);
+//  return DoesNotExist;
+//#endif
 }
 
 // *********************************************************
@@ -6321,7 +7098,7 @@ RESTARTABLE _TAG007fdc_7(i16 P1,i32 nP2,i32 nP3,i32 /*nP4*/)
     pnt_8 = pntResult;
     if (pnt_8 == NULL) RETURN;
     D0L = StrLen((char *)pnt_8);
-    f.pText10480 = (TEXT *)TAG004a22_16(P1, D0L + 1);
+    f.pText10480 = TAG004a22_16(P1, D0L + 1);
     StrCpyTo(pnt_8, (pnt)f.pText10480->pnt2, 0);
     f.pText10480->rectPos6.x1 = sw(rectPos14516.x1+10);
     f.pText10480->rectPos6.x2 = sw(rectPos14516.x2-10);
@@ -6338,7 +7115,7 @@ RESTARTABLE _TAG007fdc_7(i16 P1,i32 nP2,i32 nP3,i32 /*nP4*/)
     pnt_8 = pntResult;
     if (pnt_8 == NULL) RETURN;
     D0L = StrLen((char *)pnt_8);
-    f.pText10476 = (TEXT *)TAG004a22_16(P1, D0L+1);
+    f.pText10476 = TAG004a22_16(P1, D0L+1);
     StrCpyTo(pnt_8, (pnt)f.pText10476->pnt2, 0);
     f.pText10476->rectPos6.x1 = sw(rectPos14516.x1+34);
     f.pText10476->rectPos6.x2 = sw(rectPos14516.x2-34);
@@ -6457,6 +7234,7 @@ RESTARTABLE _StartHint(const CSB_UI_MESSAGE *)
   static TEXT  *pText_10;
   static i16 w_4;
   static i16 w_2;
+  static bool translateComplete = false;
   i16 temp;
   //static int iii;
   RESTARTMAP
@@ -6474,8 +7252,16 @@ RESTARTABLE _StartHint(const CSB_UI_MESSAGE *)
     RESTART(27)
     RESTART(28)
   END_RESTARTMAP
+  {
+    int k;
+    if (!translateComplete) DoTranslate();
+    translateComplete = true;
+    k = sizeof(S4076);
   //iii = sizeof S4076;
-  ASSERT(sizeof S4076 == ((4076 + 3)&0xfffffffc),"s4076");
+    ASSERT(    (k == ((4076 + 3)&0xfffffffc))
+            || (k == 4180),
+                            "s4076");
+  };
   memset(&f, 0, sizeof (f));
 //
 //file = hint.ftl      offset =92be
@@ -6701,7 +7487,7 @@ RESTARTABLE _TAG0089b0(i16, S20 *P2, T12 *)
   s20A3 = P2;
   if (s20A3->pnt14 == NULL) RETURN;
   if (s20A3->w18 == 0) RETURN;
-  pText_4 = (TEXT *)TAG004a22_16(5, 0);
+  pText_4 = TAG004a22_16(5, 0);
   pText_4->rectPos6.x1 = s20A3->rectPos4.x1;
   pText_4->rectPos6.x2 = s20A3->rectPos4.x2;
   pText_4->rectPos6.y1 = s20A3->rectPos4.y1;
@@ -6761,8 +7547,10 @@ void TAG008c40_1(i16 P1)
   i_4 = 0; // Just so result is defined.
   f.Word13900 = 0;
   f.Word13898 = 0;
-  ClearMemory((ui8 *)t12_14106, 144);
-  ClearMemory((ui8 *)f.Pointer13962, 48);
+  //ClearMemory((ui8 *)t12_14106, 144);
+  ClearMemory((ui8 *)t12_14106, sizeof(t12_14106));
+  //ClearMemory((ui8 *)f.Pointer13962, 48);
+  ClearMemory((ui8 *)f.Pointer13962, sizeof(f.Pointer13962));
   f.Word13896 = EnableButtons(&clickMap13914);
   if (f.Word13896 != -1) return;
   TAG0093a0_18(P1, 37);
@@ -6780,8 +7568,10 @@ void TAG008c40_2(i16 /*P1*/)
   //TAG009a02(5, P2);
   f.Word13900 = 0;
   f.Word13898 = 0;
-  ClearMemory((ui8 *)t12_14106, 144);
-  ClearMemory((ui8 *)f.Pointer13962, 48);
+  //ClearMemory((ui8 *)t12_14106, 144);
+  ClearMemory((ui8 *)t12_14106, 12*sizeof(T12));
+  //ClearMemory((ui8 *)f.Pointer13962, 48);
+  ClearMemory((ui8 *)f.Pointer13962, sizeof(f.Pointer13962));
   i_4 = 0; //Just so we return consistent result
   //TAG009a1c(5, P2);
   return;
@@ -6817,7 +7607,8 @@ void TAG008c40_3(i16 P1, i32 nP2, i32 nP3)
       t12A3->w10 = 1;
       if (nP3 != 0)
       {
-        s20A4->pnt14 = (char *)nP3;
+        NotImplemented(0x8c40);  // I don't think this can happen
+        // But if it does then we must do this:  s20A4->pnt14 = (char *)nP3;
       };
     };
   };      
@@ -6973,7 +7764,7 @@ RESTARTABLE _TAG008c40_8(i16 P1, i16 nP2)
   {
     TAG0093a0_18(P1, 68);
   };
-  pText_16 = (TEXT *)TAG004a22_16(P1, 0);
+  pText_16 = TAG004a22_16(P1, 0);
   pRectPos_42 = pRectPos_8;
   pText_16->rectPos6.x1 = pRectPos_42->x1;
   pText_16->rectPos6.x2 = pRectPos_42->x2;
@@ -6986,7 +7777,7 @@ RESTARTABLE _TAG008c40_8(i16 P1, i16 nP2)
   DisplayText(_1_, P1, pText_16);
   D7W = TAG0064fc((pnt)MinA, (pnt)MinB);
   TAG005a1e_5(_20_, P1, 20);
-  i_8 = TAG008c40_12(P1, i_4, 6, NULL);
+  i_8 = (i32)TAG008c40_12(P1, i_4, 6, NULL);
   TAG004a22_26(P1, i_8, 0x1baddade);
   DisplayText(_2_, P1, pText_16);
   TAG0051c2_37(P1);
@@ -7005,11 +7796,13 @@ RESTARTABLE _TAG008c40_8(i16 P1, i16 nP2)
 // *********************************************************
 //
 // *********************************************************
-i32 TAG008c40_12(i16 /*P1*/, i32 nP2, i32 nP3, pnt nP4)
+//i32 TAG008c40_12(i16 /*P1*/, i32 nP2, i32 nP3, pnt nP4)
+uintptr_t TAG008c40_12(i16 /*P1*/, i32 nP2, i32 nP3, pnt nP4)
 {//(i32)
   dReg D0, D7;
   S20 *s20A0;
-  i32 i_4 = 0x1baddade;
+  //i32 i_4 = 0x1baddade;
+  intptr_t i_4 = 0x1baddade;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   //TAG009a02(5, P2);
   i_4 = -1;
@@ -7042,7 +7835,8 @@ i32 TAG008c40_12(i16 /*P1*/, i32 nP2, i32 nP3, pnt nP4)
         D0B = s20_16208[D7W].b2;
         if (D0B == nP2)
         {
-          i_4 = (i32)&s20_16208[D7W].rectPos4;
+          //i_4 = (i32)&s20_16208[D7W].rectPos4;
+          i_4 = (intptr_t)&s20_16208[D7W].rectPos4;
           break;
         };
 //
@@ -7055,7 +7849,8 @@ i32 TAG008c40_12(i16 /*P1*/, i32 nP2, i32 nP3, pnt nP4)
         D0B = s20_16208[D7L].b2;
         if (D0B == nP2)
         {
-          i_4 = (i32)s20_16208[D7L].pnt14;
+          //i_4 = (i32)s20_16208[D7L].pnt14;
+          i_4 = (intptr_t)s20_16208[D7L].pnt14;
           break;
         };
 //
@@ -7115,7 +7910,8 @@ void TAG0093a0_17(i16,i32)
 // *********************************************************
 //
 // *********************************************************
-void TAG0093a0_18(i32 , i32)
+//void TAG0093a0_18(i32 , i32)
+void TAG0093a0_18(i32 , uintptr_t)
 {//(void)
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   //TAG009a02(7, P2);
@@ -7172,7 +7968,8 @@ i32 TAG00948c(i16 P1)
 {//(i32)
   BOOK *pBook_4;
 //;;;;;;;;;;;;;;;;;;;;;;;;;
-  pBook_4 = (BOOK *)AssignMemory(P1, 10);
+  //pBook_4 = (BOOK *)AssignMemory(P1, 10);
+  pBook_4 = (BOOK *)AssignMemory(P1, sizeof(BOOK));
   if (pBook_4 != NULL)
   {
     pBook_4->w0 = 0; //#pages?
@@ -7191,7 +7988,8 @@ pnt TAG0094de(i16 P1, PAGE *P2, NODE *P3)
 {//(pnt)
   NODE  *pNode_4;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  pNode_4 = (NODE *)AssignMemory(P1, 8);
+  //pNode_4 = (NODE *)AssignMemory(P1, 8);
+  pNode_4 = (NODE *)AssignMemory(P1, sizeof(NODE));
   if (pNode_4 != NULL)
   {
     pNode_4->pPage0 = P2;
@@ -7281,7 +8079,8 @@ pnt TAG0095b0(i32 P1, i32 P2)
 // *********************************************************
 //
 // *********************************************************
-pnt TAG00964e(i32 P1, i32 P2)
+//pnt TAG00964e(i32 P1, i32 P2)
+PAGE *TAG00964e(i32 P1, i32 P2)
 { //(pnt)
   //Remove page from book.
   NODE *nodeA0;
@@ -7331,7 +8130,7 @@ pnt TAG00964e(i32 P1, i32 P2)
     ReleaseMem(P1, (ui8 *)pBOOK_4);
     f.pBook14608[P1] = NULL;
   };
-  return ((pnt)pPage_16);
+  return (pPage_16);
 }
 
 // *********************************************************
@@ -7382,20 +8181,23 @@ void TAG00978a_3(i16 P1, PAGE *nP2)
 // *********************************************************
 pnt TAG00978a_12(i16 P1, i32 nP2)
 {//(pnt)
-  i32 i_4;
-  PAGE *pPageP3;
-  pPageP3 = (PAGE *)nP2;
-  i_4 = 0x1baddade;
+  //i32 i_4;
+  pnt i_4;
+  //PAGE *pPageP3;
+  //pPageP3 = (PAGE *)nP2;
+  i_4 = (pnt)0x1baddade;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   //TAG009a02(13, P2);
   {
     NODE *pNode_8;
     pNode_8 = (NODE *)TAG0095b0(P1, nP2);//Find node of P3th page.
     pntResult;
-    i_4 = (i32)pNode_8->pPage0;
+    //i_4 = (i32)pNode_8->pPage0;
+    i_4 = (pnt)pNode_8->pPage0;
   };
   //TAG009a1c(13, P2);
-  return ((pnt)i_4);
+  //return ((pnt)i_4);
+  return i_4;
 }
 
 // *********************************************************
@@ -7417,17 +8219,23 @@ i32 TAG00978a_13(i16 P1)
 // *********************************************************
 //
 // *********************************************************
-pnt TAG00978a_21(i16 P1, i32 nP2)
+//pnt TAG00978a_21(i16 P1, i32 nP2)
+PAGE *TAG00978a_21(i16 P1, i32 nP2)
 {//(pnt)
-  i32 i_4;
-  PAGE *pPageP3;
-  pPageP3 = (PAGE *)nP2;
-  i_4 = 0x1baddade;
+  //i32 i_4;
+  //pnt i_4;
+  PAGE *i_4;
+  //PAGE *pPageP3;
+  //pPageP3 = (PAGE *)nP2;
+  //i_4 = 0x1baddade;
+  //i_4 = (pnt)0x1baddade;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   //TAG009a02(13, P2);
-  i_4 = (i32)TAG00964e(P1, nP2);
+  //i_4 = (i32)TAG00964e(P1, nP2);
+  i_4 = TAG00964e(P1, nP2);
   //TAG009a1c(13, P2);
-  return ((pnt)i_4);
+  //return ((pnt)i_4);
+  return i_4;
 }
 
 // *********************************************************
@@ -7436,16 +8244,17 @@ pnt TAG00978a_21(i16 P1, i32 nP2)
 void TAG00978a_27(i16 P1, i32 nP2, pnt nP3, i32 nP4)
 {//(void)
   i32 i_4;
-  PAGE *pPageP3;
+  //PAGE *pPageP3;
   TEXT *pTextP4;
   pTextP4 = (TEXT *)nP3;
-  pPageP3 = (PAGE *)nP2;
+  //pPageP3 = (PAGE *)nP2;
   i_4 = 0x1baddade;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   //TAG009a02(13, P2);
   {
     PAGE  *pPage_8;
-    pPage_8 = (PAGE *)AssignMemory(P1, 16);
+    //pPage_8 = (PAGE *)AssignMemory(P1, 16);
+    pPage_8 = (PAGE *)AssignMemory(P1, sizeof(PAGE));
     pPage_8->w0 = 8;
     pPage_8->i4 = nP2;
     pPage_8->pText8 = pTextP4;
@@ -7465,12 +8274,13 @@ pnt TAG00978a_28(i16 P1,i16 nP2,i16 nP3)
   i16  w_16;
   i16  w_14;
   PAGE *pPage_8;
-  i32 i_4;
-  PAGE *pPageP3;
-  TEXT *pTextP4;
-  pTextP4 = (TEXT *)((int)nP3);
-  pPageP3 = (PAGE *)((int)nP2);
-  i_4 = 0x1baddade;
+  //i32 i_4;
+  pnt i_4;
+  //PAGE *pPageP3;
+  //TEXT *pTextP4;
+  //pTextP4 = (TEXT *)((int)nP3);
+  //pPageP3 = (PAGE *)((int)nP2);
+  i_4 = (pnt)0x1baddade;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   //TAG009a02(13, P2);
   i_4 = 0;
@@ -7488,7 +8298,8 @@ pnt TAG00978a_28(i16 P1,i16 nP2,i16 nP3)
         if ((w_18--) <= 0)
         {
           pPage_8->w2 = w_14;
-          i_4 = (i32)pPage_8;
+          //i_4 = (i32)pPage_8;
+          i_4 = (pnt)pPage_8;
           break;
         };
       };
@@ -7497,7 +8308,8 @@ pnt TAG00978a_28(i16 P1,i16 nP2,i16 nP3)
 //
   };
   //TAG009a1c(13, P2);
-  return ((pnt)i_4);
+  //return ((pnt)i_4);
+  return i_4;
 }
 
 // *********************************************************
@@ -7506,13 +8318,13 @@ pnt TAG00978a_28(i16 P1,i16 nP2,i16 nP3)
 void TAG00978a_29(i16 P1, i16 nP2)
 {//(void)
   PAGE *pPage_8;
-  i32 i_4;
-  PAGE *pPageP3;
-  pPageP3 = (PAGE *)((int)nP2);
-  i_4 = 0x1baddade;
+  //i32 i_4;
+  //PAGE *pPageP3;
+  //pPageP3 = (PAGE *)((int)nP2);
+  //i_4 = 0x1baddade;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   //TAG009a02(13, P2);
-  pPage_8 = (PAGE *)TAG00978a_21(P1, nP2);
+  pPage_8 = TAG00978a_21(P1, nP2);
   if (pPage_8->w0 != 8)
   {
     TAG0093a0_18(P1, 29);
@@ -7596,7 +8408,9 @@ void TAG009d7e(i16 P1, i16 *P2, i16 *P3, i16 *P4)
 // *********************************************************
 //
 // *********************************************************
-void TAG009db6(i16 P1, i32 P2, i32 *P3)
+//void TAG009db6(i16 P1, i32 P2, i32 *P3)
+//void TAG009db6(i16 P1, i32 P2, i32 *P3)
+void TAG009db6(i16 P1, uintptr_t P2, i32 *P3)
 {
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   TAG00adf4(P2);
@@ -7611,7 +8425,8 @@ void TAG009db6(i16 P1, i32 P2, i32 *P3)
 // *********************************************************
 //
 // *********************************************************
-void TAG009dea(i16 P1, i32 P2, i32 *P3)
+//void TAG009dea(i16 P1, i32 P2, i32 *P3)
+void TAG009dea(i16 P1, uintptr_t P2, i32 *P3)
 {
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   TAG00adf4(P2); //Saves pointer at Word13862 and Word13860
@@ -7875,7 +8690,7 @@ void TAG00aa58(i16 P1,i32 P2)
 // *********************************************************
 // Parameter points into code!
 // *********************************************************
-void TAG00adf4(i32 P1)
+void TAG00adf4(uintptr_t P1)
 {
   f.Word13862 = sw(P1 >> 16);
   f.Word13860 = (UI16)(P1 & 0xffff);

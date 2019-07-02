@@ -40,12 +40,12 @@ char *FILENAME::createName(const char *folder, const char *file)
   if (strlen(file) == 0) return NULL;
   if (folder == NULL)
   {
-    result = (char *)UI_malloc(strlen(file) + 1, MALLOC045);
+    result = (char *)UI_malloc((ui32)strlen(file) + 1, MALLOC045);
     if (result != NULL) strcpy(result, file);
   }
   else
   {
-    result = (char *)UI_malloc(strlen(folder) + strlen(file) +1, MALLOC046);
+    result = (char *)UI_malloc((ui32)strlen(folder) + (ui32)strlen(file) +1, MALLOC046);
     if (result != NULL)
     {
       strcpy(result,folder);
@@ -100,7 +100,7 @@ FILE *FILENAME::Open(const char *name, const char *flags)
     if (result != NULL) 
     {
       if (TimerTraceActive) fprintf(GETFILE(TraceFile), "Opened %s\n",m_name[i]);
-      m_fName = (char *)UI_malloc(strlen(m_name[i])+1,MALLOC106);
+      m_fName = (char *)UI_malloc((ui32)strlen(m_name[i])+1,MALLOC106);
       strcpy(m_fName, m_name[i]);
       return result;
     };

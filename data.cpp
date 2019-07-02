@@ -60,6 +60,7 @@ bool bigActuators = false;
 bool sequencedTimers = false;
 bool extendedTimers = false;
 bool DefaultDirectXOption = false;
+bool SupressDSAWarningOption = false;
 bool extendedWallDecorations;
 i32  deleteDuplicateTimers = -1;
 OVERLAYDATA currentOverlay;
@@ -896,7 +897,8 @@ bool DATABASES::IsDBType(DBCOMMON *pDB, DBTYPE type)
 
 i32 DATABASES::GetDBIndex(DBCOMMON *pDB, DBTYPE dbType)
 {
-  return ((char *)pDB - (char *)m_Address[dbType])/dbEntrySizes[dbType];
+  //return ((char *)pDB - (char *)m_Address[dbType])/dbEntrySizes[dbType];
+  return (i32)((char *)pDB - (char *)m_Address[dbType])/dbEntrySizes[dbType];
 }
 
 RN DATABASES::AllocateSegment(i32 /*dbNum*/, DBTYPE /*dbType*/)
@@ -1370,7 +1372,8 @@ void DB4::groupIndex(ui32 i)
 {
   if (TimerTraceActive)
   {
-    if ((i32)this == 0x87e03c)
+    //if ((i32)this == 0x87e03c)
+    if ((uintptr_t)this == 0x87e03c)
     {
       fprintf(GETFILE(TraceFile),"Set 105f groupIndex to %02x\n",i);
     };
@@ -1951,7 +1954,8 @@ void Signature(int fileHandle, ui32 *signature1, ui32 *signature2)
   if (f == NULL) return;
   sum = 0;
   MD5Init();
-  while ( (len=fread(buf,1,1000,f)) > 0)
+  //while ( (len=fread(buf,1,1000,f)) > 0)
+  while ( (len = (i32)fread(buf,1,1000,f)) > 0)
   {
 //    for (i=0; i<len; i++)
 //    {

@@ -1,0 +1,59 @@
+;----------------------------------------------
+#define StdBltShape Bitmap Rectangle
+enum Bitmap
+{
+  WallBitmap8 = 1
+}
+enum Rectangle
+{
+  WallRectangle8 = 1
+}
+#end
+;------------------------------------------
+#define StdDrawText srcCell srcPos  drawLocation
+enum srcCell
+{
+  F1R1 = 8
+}
+enum srcPos
+{
+  Left = 2
+}
+enum drawLocation
+{
+  F1R1Left = 11
+}
+#end
+; -----------------------------------------
+#define StdDrawDecoration srcCell srcPos  drawLocation
+enum srcCell
+{
+  F1R1 = 8
+}
+enum srcPos
+{
+  Left = 2
+}
+enum drawLocation
+{
+  F1R1Left = 11
+}
+#end
+;----------------------------------------------
+#define DRAW  relativeCell cellType
+enum relativeCell
+{
+  F1R1 = 8
+}
+enum cellType
+{
+  Stone = 1
+}
+#end
+;-------------------------------------------------
+#
+DRAW  F1R1 Stone ; cell 8
+StdBltShape        WallBitmap9   WallRectangle8
+StdDrawText        F1R1          Left              F1R1Left
+StdDrawDecoration  F1R1          Left              F1R1Left
+END

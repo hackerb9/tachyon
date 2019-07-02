@@ -61,7 +61,7 @@ void bmpError(char *fname, const char *msg, bool Die)
   if (!IsPlayFileOpen())
   {
     char *m;
-    m = (char *)UI_malloc(strlen(fname) + strlen(msg) + 100,
+    m = (char *)UI_malloc((ui32)(strlen(fname) + strlen(msg) + 100),
                           MALLOC003);
     sprintf(m,"Bitmap file error - filename = %s\n%s",
               fname, msg);

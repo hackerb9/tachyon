@@ -1317,6 +1317,8 @@ void Process_SDL_WINDOWEVENT(void)
       break;
     case SDL_WINDOWEVENT_RESTORED:
       break;
+    case SDL_WINDOWEVENT_TAKE_FOCUS:
+      break;
     default:
       {
         char line[80];

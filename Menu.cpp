@@ -352,7 +352,7 @@ RESTARTABLE _DoMenu(
   D5W = 29;
   if (title1 != NULL)
   {
-    D0W = SplitLongLine(title1, LOCAL_50, LOCAL_100);
+    D0W = SplitLongLine(TranslateLanguage(title1), LOCAL_50, LOCAL_100);
     if (D0W != 0)
     {
       D5W = 21;
@@ -385,7 +385,7 @@ RESTARTABLE _DoMenu(
     }
     else
     {
-      D0W = StrLen(title1);
+      D0W = StrLen(TranslateLanguage(title1));
       D1W = sw(D0W * 3);
       D6W = sw(113 - D1W);
       TextOut_OneLine(d.pViewportBMP,
@@ -394,7 +394,7 @@ RESTARTABLE _DoMenu(
                       D5W,
                       11,
                       5,
-                      title1,
+                      TranslateLanguage(title1),
                       999,
                       false);
       D5W += 8;
@@ -402,7 +402,7 @@ RESTARTABLE _DoMenu(
   };
   if (title2 != NULL)
   {
-    D0W = SplitLongLine(title2, LOCAL_50, LOCAL_100);
+    D0W = SplitLongLine(TranslateLanguage(title2), LOCAL_50, LOCAL_100);
     if (D0W != 0)
     {
       D0W = StrLen(LOCAL_50);
@@ -442,7 +442,7 @@ RESTARTABLE _DoMenu(
                       D5W,
                       9,
                       5,
-                      title2,
+                      TranslateLanguage(title2),
                       999,
                       false);
     };

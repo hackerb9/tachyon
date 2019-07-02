@@ -5027,7 +5027,7 @@ i32 TAG00686a(i16 P1)
     };
   };
   UI_MessageBox("Cannot read SaveFile\nPerhaps not Utilized",
-                "SAVE FILE ERROR",
+                TranslateLanguage("SAVE FILE ERROR"),
                 MESSAGE_OK|MESSAGE_ICONERROR);
   UI_Die();
   TAG001064(f.Word664);
@@ -5172,7 +5172,7 @@ RESTARTABLE _TAG006c7e_xxx(i16 P1, i16 P2, i32 P3, i32, pnt P5)//(i32)
       TAG008c40_2(-1);
       DoMenu(_1_,
             //const pnt title1,        //8
-            "SELECT SAVE GAME",
+            TranslateLanguage("SELECT SAVE GAME"),
             //const pnt title2,        //12
             "",
             //const pnt opt1,          //16

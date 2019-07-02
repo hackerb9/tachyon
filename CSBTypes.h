@@ -52,6 +52,8 @@ typedef i8 *pnt;
 typedef ui8 *upnt;
 typedef unsigned int bool32;
 typedef unsigned _int16 HTIMER;  // A handle to a timer entry;
+typedef ui32 uintptr_t;
+typedef i32   intptr_t;
 #else
 # ifdef _LINUX
   typedef guint32 HWND;

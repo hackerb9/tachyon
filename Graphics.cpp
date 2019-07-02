@@ -130,8 +130,9 @@ i16 globalPalette[16] = { // RGB top-to-bottom
 
 void setscreen(ui8 *log,ui8 *phys,i16 /*res*/)
 {
-  if ((i32)phys != -1) screen.physbase(phys);
-  if ((i32)log != -1) screen.logbase(log);
+  //if ((i32)phys != -1) screen.physbase(phys);
+  if ((i32)(uintptr_t)phys != -1) screen.physbase(phys);
+  if ((i32)(uintptr_t)log != -1) screen.logbase(log);
 }
 
 ui8 *physbase(void)
@@ -387,7 +388,10 @@ void ShrinkBLT(ui8 *src,
 {         //        8     12     16     18     20     22     24
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   dReg D0, D1, D2, D3, D4, D5, D7, D6;
-  aReg A2, A3, A4;
+  //aReg A2, A3, A4;
+  ui32 iA2;  // only used as an integer
+  i32 iA3;
+  ui32 iA4;
   //i32 saveD4=D4,saveD5=D5,saveD6=D6,saveD7=D7;
   //pnt saveA2=A2,saveA3=A3,saveA4=A4,saveA5=A5;
   i16 LOCAL_10;
@@ -407,7 +411,8 @@ void ShrinkBLT(ui8 *src,
   D1L <<= D2B;
   D1L = (D1UL/D3UW) & 0xffff;
   D1L <<= 6;
-  A2 = (pnt)D1L;
+  //A2 = (pnt)D1L;
+  iA2 = D1L;
   D1UL >>= 1;//ULed
   D1L += 0x7fff;
   LOCAL_8 = D1L;
@@ -419,13 +424,15 @@ void ShrinkBLT(ui8 *src,
   LOCAL_4 = D1L;
   D1UL >>= 1;//ULed
   D1L += 0x7fff;
-  A4 = (pnt)D1L;
+  //A4 = (pnt)D1L;
+  iA4 = D1L;
   D1UL >>= 16;//ULed
   D0L = D1UW*D0UW;
   src += D0W;
   pushedD3 = D3W;
 tag00850a:
-  A3 = (pnt)-1;
+  //A3 = (pnt)-1;
+  iA3 = -1;
   D4L = LOCAL_8;
   D7L = 0x80008000;
 tag008518:
@@ -436,9 +443,11 @@ tag00851c:
   D6L = -16;
   D6W &= D4W;
 
-  if ((ui16)D6W != LOW_I16(A3))
+  //if ((ui16)D6W != LOW_I16(A3))
+  if ((ui16)D6W != LOW_I16(iA3))
   {
-    A3 = (pnt)((int)D6W);
+    //A3 = (pnt)((int)D6W);
+    iA3 = (int)D6W;
     D6UW >>= 1;//UWed
     D0L = LE32(longGear(src+D6W));
     D1L = LE32(longGear(src+D6W+4));
@@ -484,7 +493,8 @@ tag00851c:
   if (pushedD3 != 0)
   {
     SWAP(D4);
-    D4L += (i32)A2;
+    //D4L += (i32)A2;
+    D4L += iA2;
     D7L = ((D7L>>1)&0x7fffffff)|((D7L&1)<<31);
     if(D7L >= 0) goto tag00851c;
     longGear(dst) = LE32(D2L); dst+=4;
@@ -496,10 +506,12 @@ tag00851c:
   dstHeight--;
   if (dstHeight != 0)
   {
-    D2L = (i32)A4;
+    //D2L = (i32)A4;
+    D2L = iA4;
     D3L = D2L;
     D3L += LOCAL_4;
-    A4 = (pnt)D3L;
+    //A4 = (pnt)D3L;
+    iA4 = D3L;
     SWAP(D2);// = ((D2>>16)&0xffff)|((D2&0xffff)<<16);
     SWAP(D3);// = ((D3>>16)&0xffff)|((D3&0xffff)<<16);
     D3W = (i16)(D3W-D2W);
@@ -567,7 +579,11 @@ void TAG0088b2(ui8 *src,
 //                  8      12      16     20     22     24     26     28
 {
   dReg D0, D1, D2, D3, D4, D5, D6, D7;
-  aReg A0, A1, A3, A4, A5;
+  //aReg A0, A1, A3, A4, A5;
+  aReg A0, A1, A5;
+  i32 iA3;
+  i32 iA4;
+  i32 iA5;
   bool H1Valid;
   static ui16 masks[] = {
       0x0000, 0x8000, 0xc000, 0xe000, 0xf000, 0xf800, 0xfc00, 0xfe00,
@@ -675,13 +691,15 @@ void TAG0088b2(ui8 *src,
   D3L = (15 + D7UW + D5UW) & 0xfff0; // src x of first full word beyond image
   D3UW >>= 1;//UWed // # bytes in src line containing information
   D4W = (i16)(D2W - D3W); // #source bytes to skip at end of line
-  A3 = (pnt)D4L; // # bytes to skip at end of source line
+  //A3 = (pnt)D4L; // # bytes to skip at end of source line
+  iA3 = D4L; // # bytes to skip at end of source line
   D7W = (i16)(D7W+D6W); // #bits in dest words including leading empty bits
   LOCAL_2 = D7W; // # bits in dest incl leading empty bits
   D3L = (15 + D7UW) & 0xfff0;
   D3UW >>= 1;//UWed // #bytes in dest containing some part of image
   D1W = (i16)(D1W-D3W); // #bytes in dest not containing any image
-  A4 = (pnt)D1L; // #bytes in dest not conataining any imaage
+  //A4 = (pnt)D1L; // #bytes in dest not conataining any imaage
+  iA4 = D1L; // #bytes in dest not conataining any imaage
   D1W = D5W; // source start bit offset
   D5W = (i16)(D6W - D5W); // D5 = right shift count src->dest
   if (D5W <0)   D5W += 16; // if source is left of dest in current word
@@ -702,7 +720,8 @@ void TAG0088b2(ui8 *src,
       D1W = (i16)(D1W + D7W - D6W);
       if (D1W < 17)
       {
-        A3 -= 8;
+        //A3 -= 8;
+        iA3 -= 8;
       };
     };
   }
@@ -717,7 +736,8 @@ void TAG0088b2(ui8 *src,
   // *****4411c6
 
   D3W = (i16)(D5W + D5W);
-  A5 = (pnt)((int)wordGear(A5 + D3W));
+  //A5 = (pnt)((int)wordGear(A5 + D3W));
+  iA5 = (int)wordGear(A5 + D3W);
   SWAP(D5);// = ((D5&0xffff)<<16) | ((D5>>16)&0xffff);
   if (transparentColor < 0)
   {
@@ -757,7 +777,8 @@ tag008a32:
   if (D5W != 0) // Shift source to destination
   {
 
-    D4W = LOW_I16(A5);
+    //D4W = LOW_I16(A5);
+    D4W = LOW_I16(iA5);
     if (D6W < D5W)
     {
       D0UH2 = D0UH1;
@@ -983,7 +1004,8 @@ tag008aee:
       {
         goto tag008aba;
       };
-      D4W = LOW_I16(A5);
+      //D4W = LOW_I16(A5);
+      D4W = LOW_I16(iA5);
       goto tag008a62;
     };
     //4416f9
@@ -1011,8 +1033,10 @@ tag008aee:
   if (D7W < 0) goto tag008c90;
   SWAP(D7);// = ((D7&0xffff)<<16) | ((D7>>16)&0xffff);
   D7W = LOCAL_2;
-  A0 += LOW_I16(A3);
-  A1 += LOW_I16(A4);
+  //A0 += LOW_I16(A3);
+  A0 += LOW_I16(iA3);
+  //A1 += LOW_I16(A4);
+  A1 += LOW_I16(iA4);
   goto tag008a32;
 
     // *****441455
@@ -1547,7 +1571,7 @@ void PrintWithSubstitution(const char *txt, ui32 color, bool translate)
   const char *p_4 = "HUH???";
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   A3 = txt;
-  srclen = strlen(txt);
+  srclen = (ui32)strlen(txt);
   // *(A2++) = 10;
   outbuf.addch(10);
   do
@@ -1591,7 +1615,7 @@ void PrintWithSubstitution(const char *txt, ui32 color, bool translate)
   outbuf.addch(0);
   if (outbuf.buf()[1] != 0)
   {
-    QuePrintLines((i16)color, outbuf.buf());
+    QuePrintLines((i16)color, outbuf.buf(), false);
   };
 }
 
@@ -1982,7 +2006,8 @@ void ReadGraphicsIndex(void) // TAG021d9a
   };
   if (success)
   {
-    d.ppUnExpandedGraphics = (pnt *)UI_malloc((D6L*2)&0xffff,MALLOC071);
+    //d.ppUnExpandedGraphics = (pnt *)UI_malloc((D6L*2)&0xffff,MALLOC071);
+    d.ppUnExpandedGraphics = (pnt *)UI_malloc((d.NumGraphic*sizeof(*d.ppUnExpandedGraphics))&0xffff,MALLOC071);
     success = d.ppUnExpandedGraphics!=NULL;
   };
   if (success)
@@ -1993,7 +2018,8 @@ void ReadGraphicsIndex(void) // TAG021d9a
   };
   if (success)
   {
-    ClearMemory((ui8 *)d.ppUnExpandedGraphics,(2*D6L)&0xffff);
+    //ClearMemory((ui8 *)d.ppUnExpandedGraphics,(2*D6L)&0xffff);
+    ClearMemory((ui8 *)d.ppUnExpandedGraphics,(d.NumGraphic*sizeof(*d.ppUnExpandedGraphics))&0xffff);
     fillMemory((i16 *)d.GraphicIndex0,D6L >>= 1, -1, 2);
     D0L = LocateNthGraphic(--D6L); // Locate last graphic in file;
     D3L = d.GraphicCompressedSizes[D6W] & 0xffff; // Size of last graphic
@@ -2774,7 +2800,8 @@ i32 LZWExpand(i16 fileHandle,
 
     }; //while
 
-    D0L = (aReg)dest - LOCAL_12; // Total bytes in result
+    //D0L = (aReg)dest - LOCAL_12; // Total bytes in result
+    D0L = (ui32)( (aReg)dest - LOCAL_12 ); // Total bytes in result
   };
   //D4=saveD4;D6=saveD6;D7=saveD7;
   return D0L;

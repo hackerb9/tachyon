@@ -140,7 +140,7 @@ void Statistics(void)
 
         char mName[80];
         GetMonsterName(i, j, mName);
-        len = strlen(mName);
+        len = (i32)strlen(mName);
         if (len > maxLen) maxLen = len;
       };
     }
@@ -162,7 +162,7 @@ void Statistics(void)
         char mName[80];
         memset(mName,' ',80);
         GetMonsterName(i,j,mName);
-        len = strlen(mName);
+        len = (i32)strlen(mName);
         mName[len] = ' ';
         mName[maxLen] = 0;
         sprintf(line, "%s", mName);

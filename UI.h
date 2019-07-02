@@ -95,12 +95,12 @@ class CSB_UI_MESSAGE
 {
 public:
   MTYPE type;
-  i32   p1;
-  i32   p2;
-  i32   p3;
-  i32   p4;
-  i32   p5;
-  i32   p6;
+  i32       p1;
+  i32       p2;
+  uintptr_t p3;
+  i32       p4;
+  i32       p5;
+  i32       p6;
 };
 
 i32 CSBUI(CSB_UI_MESSAGE *);
@@ -128,7 +128,7 @@ const i32 SOUND_ASYNC  =2;
 const i32 SOUND_MEMORY =4;
 bool UI_PlaySound(const char *wave, i32 flags, i32 attenuation);
 void UI_StopSound(void);
-void UI_PushMessage(MTYPE,i32=0,i32=0,i32=0,i32=0,i32=0,i32=0);
+void UI_PushMessage(MTYPE,i32=0,i32=0,uintptr_t=0,i32=0,i32=0,i32=0);
 void UI_GetCursorPos(i32 *x, i32 *y);
 i32  UI_CONSTAT(void);// return non-zero if key available
 i32  UI_DIRECT_CONIN(void); //Get next key...no waiting.
@@ -147,6 +147,9 @@ void UI_SetDIBitsToDevice(
             char *,
             void *,//BITMAPINFO *,
             i32);
+void UI_ScreenStartUpdates(void);
+void UI_ScreenEndUpdates(void);
+void UI_ScreenPresent(void);  // Called if any changes to screen
 #ifdef _LINUX
 bool UI_ProcessOption(char **argv,i32 &argc);
 #else
@@ -159,7 +162,7 @@ void UI_BeginRecordOK(bool ok);
 FILE *UI_fopen(const char *name, const char *flags);
 #endif
 
-void *UI_malloc(i32 size, ui32 id);
+void *UI_malloc(ui32 size, ui32 id);
 void *UI_realloc(void *buf, i32 size, ui32 id);
 void  UI_CheckMemoryLeaks(void);
 

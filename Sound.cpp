@@ -204,7 +204,8 @@ char *SoundDecode(pnt pGraphic, i32 numSample, i32 volume)
   n = numSample; // Number of samples to store
   pN = (char *)pGraphic;
   if (f) fprintf(f,"Starting pN = %08x   Number of samples=%08x\n"
-                 ,(ui32)pN, n);
+                 //,(ui32)pN, n);
+                 ,(ui32)(uintptr_t)pN, n);
   even=true;
   while (n > 0)
   {
@@ -225,7 +226,8 @@ char *SoundDecode(pnt pGraphic, i32 numSample, i32 volume)
       if (f)
       {
         fprintf(f,"Non-zero sample  n=%d\n",n);
-        fprintf(f,"***DEBUG store sample #%d\n",pW-(ui8*)WavBuf-58);
+        //fprintf(f,"***DEBUG store sample #%d\n",pW-(ui8*)WavBuf-58);
+        fprintf(f,"***DEBUG store sample #%d\n",(i32)(pW-(ui8*)WavBuf)-58);
       };
       if (!usingDirectX)
       {
@@ -267,7 +269,8 @@ char *SoundDecode(pnt pGraphic, i32 numSample, i32 volume)
       {
         if (f)
         {
-          fprintf(f,"***DEBUG store sample #%d\n",pW-(ui8 *)WavBuf-58);
+          //fprintf(f,"***DEBUG store sample #%d\n",pW-(ui8 *)WavBuf-58);
+          fprintf(f,"***DEBUG store sample #%d\n",(i32)(pW-(ui8 *)WavBuf)-58);
         };
         *(pW++) = (ui8)sample;
       };
@@ -277,14 +280,16 @@ char *SoundDecode(pnt pGraphic, i32 numSample, i32 volume)
   {
     for (char *kk= (char *)pGraphic; kk<pN+1; kk+=8)
     {
-      fprintf(f,"%08x ",kk-(char *)pGraphic);
+      //fprintf(f,"%08x ",kk-(char *)pGraphic);
+      fprintf(f,"%08x ",(i32)(kk-(char *)pGraphic));
       for (i32 kkk=0; kkk<8; kkk++)
       {
         fprintf(f,"%02x ", (*(kk+kkk))&0xff);
       };
       fprintf(f,"\n");
     };
-    fprintf(f,"Ending pN = %08x\n", (ui32)pN);
+    //fprintf(f,"Ending pN = %08x\n", (ui32)pN);
+    fprintf(f,"Ending pN = %08x\n", (ui32)(uintptr_t)pN);
     fclose(f);
     f=NULL;
   };
@@ -768,16 +773,20 @@ i32 CheckSoundQueue(void)
 // *********************************************************
 void TAG001e16(i16 P1)
 {
-  dReg D6, D7;
+  //dReg D6, D7;
+  dReg D7;
+  ui8 *pD6;
   aReg A0, A1;
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   //i32 saveD6=D6,saveD7=D7;
   D7W = P1;
-  D6L = (i32)dosound(NULL);
+  //D6L = (i32)dosound(NULL);
+  pD6 = dosound(NULL);
   D7L = (D7L & 0xf) * 4;
   A1 = (pnt)0x00ff8800;
   A0 = (pnt)data001f76;
-  dosound((ui8 *)D6L);
+  //dosound((ui8 *)D6L);
+  dosound(pD6);
   //D6=saveD6;D7=saveD7;
 }
 /*

@@ -162,8 +162,8 @@ void PLAYFILE::Open(void)
   };
   GETS(versionLine,199,m_file);
   {
-    int n;
-    for (n = strlen(versionLine)-1; n>=0; n--)
+    i32 n;
+    for (n = (i32)strlen(versionLine)-1; n>=0; n--)
     {
       if (versionLine[n] > 32) break;
       versionLine[n] = 0;
@@ -256,7 +256,7 @@ bool PLAYFILE::Play(MouseQueueEnt *ent)
       };
       return false;
     };
-    len = strlen(line);
+    len = (i32)strlen(line);
     while ( (len>0) && ((line[len-1] == '\n')||(line[len-1] == '\r')))
     {
       len--;
@@ -519,7 +519,7 @@ bool PLAYFILE::Play(MouseQueueEnt *ent)
         else
         {
           i32 len;
-          len = strlen(annotationLine);
+          len = (i32)strlen(annotationLine);
           if ( (len>0) && (annotationLine[0] == '#'))
           {
             if (sscanf(annotationLine+1,"%d",&annotationTime) != 1)
@@ -549,7 +549,7 @@ bool PLAYFILE::Play(MouseQueueEnt *ent)
         while (fgets(annotationLine, 198, GETFILE(annotationFile)) != NULL)
         {
           i32 lineLen;
-          lineLen = strlen(annotationLine);
+          lineLen = (i32)strlen(annotationLine);
           annotationLine[lineLen-1] = 0x0d;
           annotationLine[lineLen] = 0x0a;
           annotationLine[lineLen+1] = 0;

@@ -256,16 +256,25 @@ struct DBank {
   ui8 *Pointer22964; // Graphic #535
   ui8 *Pointer22960; // Graphic #5
   ui8 *Pointer22956; // Graphic #4 Prison entrance minus door
-  ui8 *Pointer22952; // Graphic #2 Prison door - left
-  ui8 *Pointer22948; //  ShrinkBLT (Graphic #2)
-  ui8 *Pointer22944; //  ShrinkBLT (Graphic #2)
-  ui8 *Pointer22940; //  ShrinkBLT (Graphic #2)
-  ui8 *Pointer22936; // Graphic #3 Prison door - right
-  ui8 *Pointer22932; //  ShrinkBLT (Graphic #3)
-  ui8 *Pointer22928; //  ShrinkBLT (Graphic #3)
-  ui8 *Pointer22924; //  ShrinkBLT (Graphic #3)
-  ui8 *Pointer22920;
-  ui8 *Pointer22916; // Prison dungeon interior
+//  ui8 *Pointer22952; // Graphic #2 Prison door - left
+//  ui8 *Pointer22948; //  ShrinkBLT (Graphic #2)
+//  ui8 *Pointer22944; //  ShrinkBLT (Graphic #2)
+//  ui8 *Pointer22940; //  ShrinkBLT (Graphic #2)
+//  ui8 *Pointer22936; // Graphic #3 Prison door - right
+//  ui8 *Pointer22932; //  ShrinkBLT (Graphic #3)
+//  ui8 *Pointer22928; //  ShrinkBLT (Graphic #3)
+//  ui8 *Pointer22924; //  ShrinkBLT (Graphic #3)
+  ui8 *Pointer22952[8];  // 8 graphic pointers treated as an array
+                         // [0] Graphic #2 Prison door - left ( length 10304 )
+                         // [1]  ShrinkBLT (Graphic #2)
+                         // [2]  ShrinkBLT (Graphic #2)
+                         // [3]  ShrinkBLT (Graphic #2)
+                         // [4] Graphic #3 Prison door - right
+                         // [5]  ShrinkBLT (Graphic #3)
+                         // [6]  ShrinkBLT (Graphic #3)
+                         // [7]  ShrinkBLT (Graphic #3)
+  ui8 *Pointer22920; // ( length 20608 )
+  ui8 *Pointer22916; // Prison dungeon interior ( length 20608 )
   
   const char* Pointer22912;
   const char* Pointer22908;

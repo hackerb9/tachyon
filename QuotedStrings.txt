@@ -1,0 +1,296 @@
+Attack.cpp          977        A2 = "NEED AMMO";
+Attack.cpp         1909          PrintWithSubstitution("IT COMES UP HEADS");
+Attack.cpp         1913          PrintWithSubstitution("IT COMES UP TAILS");
+Attack.cpp         2406    PrintLines(15, "THE END.");
+Chaos.cpp           256          "CSBGAME.DAT",
+Chaos.cpp           268    "",                                     //3
+Chaos.cpp           269    "",                                     //4
+Chaos.cpp           270    "",                                     //5
+Chaos.cpp           272    "",                                     //7
+Chaos.cpp           276    "",                                     //11
+Chaos.cpp           278    "",                                     //13
+Chaos.cpp           281    "",                                     //16
+Chaos.cpp           282    "",                                     //17
+Chaos.cpp           283    "",                                     //18
+Chaos.cpp           284    "",                                     //19
+Chaos.cpp           286    "",                                               //21
+Chaos.cpp           291    "",                                     //26
+Chaos.cpp           292    "",                                     //27
+Chaos.cpp           297    "OK",                                   //32
+Chaos.cpp           302    "",                                     //37
+Chaos.cpp           303    "",                                     //38
+Chaos.cpp           305    "",                                     //40
+Chaos.cpp           306    "",                                      //41
+Chaos.cpp           364  char *pnt12246 = "DMGAME.DAT";
+Chaos.cpp           365  char *pnt12242 = "DMGAME.BAK";
+Chaos.cpp           366  char *pnt12238 = "CSBGAME.DAT";
+Chaos.cpp           367  char *pnt12234 = "CSBGAME.BAK";
+Chaos.cpp           501    "FIGHTER",
+Chaos.cpp           502    "NINJA",
+Chaos.cpp           503    "PRIEST",
+Chaos.cpp           504    "WIZARD"
+Chaos.cpp           509    "NEOPHYTE   ",
+Chaos.cpp           510    "NOVICE     ",
+Chaos.cpp           511    "APPRENTICE ",
+Chaos.cpp           512    "JOURNEYMAN ",
+Chaos.cpp           513    "CRAFTSMAN  ",
+Chaos.cpp           514    "ARTISAN    ",
+Chaos.cpp           515    "ADEPT      ",
+Chaos.cpp           516    "EXPERT     ",
+Chaos.cpp           523    "ARCHMASTER "
+Chaos.cpp          2098        e.GameFile = OPEN(pnt12246, "rb"); //"DMGAME.DAT"
+Chaos.cpp          3551    PrintAttributeValue("HEALTH     ", LE16(wordGear(A4+54)), 154);
+Chaos.cpp          3552    PrintAttributeValue("STAMINA    ",LE16(wordGear(A4+58))/10, 161);
+Chaos.cpp          3553    PrintAttributeValue("MANA       ",LE16(wordGear(A4+62)), 168);
+Chaos.cpp          3573    AddDialogButton(&dlgButton5050[10], "LOAD CHAMPIONS", 2);
+Chaos.cpp          3574    AddDialogButton(&dlgButton5050[11], "SAVE CHAMPIONS", 2);
+Chaos.cpp          3575    AddDialogButton(&dlgButton5050[12], "MAKE NEW ADVENTURE", 2);
+Chaos.cpp          3576    AddDialogButton(&dlgButton5050[7], "REVERT", 2);
+Chaos.cpp          3577    AddDialogButton(&dlgButton5050[8], "UNDO", 2);
+Chaos.cpp          3578    AddDialogButton(&dlgButton5050[16], "QUIT", 2);
+Character.cpp      1423        TextToViewport(104, 132, LOCAL_8, "LOAD");//LOCAL_8 is text color
+Character.cpp      1427        StrCat(d.Byte12914, ".");
+Character.cpp      1436        StrCat(d.Byte12914, " KG");
+Character.cpp      2866          StrCat(A2, " AND ");
+Character.cpp      3157          StrCat(descriptiveText, " ");
+Character.cpp      3183        descriptivePhrases[2] = "CONSUMABLE";
+Character.cpp      3184        descriptivePhrases[3] = "POISONED";
+Character.cpp      3185        descriptivePhrases[4] = "BROKEN";
+Character.cpp      3186        descriptivePhrases[5] = "CURSED";
+Character.cpp      3187        descriptivePhrases[6] = "";
+Character.cpp      3188        descriptivePhrases[7] = "";
+Character.cpp      3189        descriptivePhrases[8] = "";
+Character.cpp      3190        descriptivePhrases[9] = "";
+Character.cpp      3259                StrCpy(descriptiveText, "PARTY FACING");
+Character.cpp      3276        StrCpy(descriptiveText, "WEIGHS ");
+Character.cpp      3280        StrCat(descriptiveText, ".");
+Character.cpp      3284        StrCat(descriptiveText, " KG.");
+Character.cpp      3766          //    QuePrintLines(d.Byte1386[chIdx]," SHIELD INCREASED TO ");
+Character.cpp      3937        //  QuePrintLines(d.Byte1386[chIdx]," SHIELD INCREASED TO ");
+Character.cpp      4154      StrCat(LOCAL_24, " ");
+Character.cpp      4164      A0 = d.Pointer16822[D7W];//"STRENGTH", "DEXTERITY", etc.
+Code11f52.cpp      3722            // in the case of the "THERE IS ONLY ONE LEVEL....."
+Code1f9e6.cpp       199            StrCat(LOCAL_130, " ");
+Code1f9e6.cpp       240        TextOutToScreen(110, 0x9a, 4, 0, "RESTART THIS GAME");
+CSBCode.cpp          95      if (text == NULL) text = "";
+CSBCode.cpp         335    Pointer16596[0] = "FIGHTER";
+CSBCode.cpp         336    Pointer16596[1] = "NINJA";
+CSBCode.cpp         337    Pointer16596[2] = "PRIEST";
+CSBCode.cpp         338    Pointer16596[3] = "WIZARD";
+CSBCode.cpp         342    Pointer16770[2]  = "NEOPHYTE";
+CSBCode.cpp         343    Pointer16770[3]  = "NOVICE";
+CSBCode.cpp         344    Pointer16770[4]  = "APPRENTICE";
+CSBCode.cpp         345    Pointer16770[5]  = "JOURNEYMAN";
+CSBCode.cpp         346    Pointer16770[6]  = "CRAFTSMAN";
+CSBCode.cpp         347    Pointer16770[7]  = "ARTISAN";
+CSBCode.cpp         348    Pointer16770[8]  = "ADEPT";
+CSBCode.cpp         349    Pointer16770[9]  = "EXPERT";
+CSBCode.cpp         356    Pointer16770[16] = "ARCHMASTER";
+CSBCode.cpp         361    DirectionNames[0] = "NORTH";
+CSBCode.cpp         362    DirectionNames[1] = "EAST";
+CSBCode.cpp         363    DirectionNames[2] = "SOUTH";
+CSBCode.cpp         364    DirectionNames[3] = "WEST";
+CSBCode.cpp         365    Pointer16822[0] = "L";
+CSBCode.cpp         366    Pointer16822[1] = "STRENGTH";
+CSBCode.cpp         367    Pointer16822[2] = "DEXTERITY";
+CSBCode.cpp         368    Pointer16822[3] = "WISDOM";
+CSBCode.cpp         369    Pointer16822[4] = "VITALITY";
+CSBCode.cpp         385    Pointer22848 = "THAT DISK IS UNREADABLE";
+CSBCode.cpp         391    Pointer22872 = "SAVING GAME . . .";
+CSBCode.cpp         392    Pointer22876 = "LOADING GAME . . .";
+CSBCode.cpp         393    Pointer22880 = "FORMATTING DISK . . .";
+CSBCode.cpp         396    Pointer22892 = "LOAD SAVED GAME";
+CSBCode.cpp         397    Pointer22896 = "SAVE AND PLAY";
+CSBCode.cpp         398    Pointer22900 = "SAVE AND QUIT";
+CSBCode.cpp         399    Pointer22904 = "FORMAT FLOPPY";
+CSBCode.cpp         400    Pointer22908 = "OK";
+CSBCode.cpp         401    Pointer22912 = "CANCEL";
+CSBCode.cpp         725    DEBUGMAIN("RETURN")
+CSBCode.cpp        1053    die(errorNum, "");
+CSBCode.cpp        1520    m_futureLines.AddText(-1,0,0,"",printLinesCount); // Push lines 1, 2,and 3 up to 0, 1, and 2
+CSBCode.cpp        1640            scrollingText.Printf(color, " ", printLinesCount); // A single space.
+CSBCode.cpp        4796       || (!bcd && (strstr(pText, ".Q.") == NULL))) return true;
+CSBCode.cpp        4821          i += 3; // Skip over the ".Q."
+CSBCode.cpp        5426            UI_MessageBox("Excessive number of monsters","WARNING",MESSAGE_OK);
+CSBCode.cpp        5880                   //  QuePrintLines(d.Byte1386[chIdx]," SHIELD DECREASED TO ");
+CSBCode.cpp        6144        A0 = " RESURRECTED";
+CSBCode.cpp        6148        A0 = " REINCARNATED";
+CSBCode.cpp        6833    TextToViewport(5, 116, COLOR_13, "HEALTH");
+CSBCode.cpp        6834    TextToViewport(5, 124, COLOR_13, "STAMINA");
+CSBCode.cpp        6835    TextToViewport(5, 132, COLOR_13, "MANA");
+CSBCode.cpp        7669                    "WAKE UP");
+CSBCode.cpp        7732      return "";
+CSBCode.cpp        8361    for (D7W=0; D7W<18; D7W++) // expanding "CHAOS"
+CSBCode.cpp        8538      TAG01f5ea(_1_); //Remove "CHAOS" display, Show Prison door.
+CSBCode.cpp        8726    d.Pointer22984 = "DRIVE.";
+CSBCode.cpp        8727    d.Pointer22988 = "DRIVE.";
+CSBCode.cpp        8748    strcpy(fNames[0]+2,"CSBGAME.DAT");
+CSBCode.cpp        8784            strcpy(fNames[i],"   ");
+CSBCode.cpp        8810           "SELECT GAME FILE",
+CSBCode.cpp        9503               "PLAY GAME",
+CSBCode.cpp        9504               "ASCII DUMP",
+CSBCode.cpp       10325           "QUIT",
+CSBCode.cpp       10326           "DUNGEON",
+CSBCode.cpp       10327           "UTILITY",
+CSBCode.cpp       10328           "HINT",
+CSBlinux.cpp        236                                  ""
+CSBlinux.cpp        243                                  UI_MessageBox( S->str, APPTITLE " " APPVERSION APPVERMINOR, MESSAGE_OK );
+CSBlinux.cpp        356          folderSavedGame=".";
+CSBlinux.cpp        357          folderParentName=".";
+CSBlinux.cpp        358          folderName=".";
+CSBlinux.cpp        359          root = ".";
+CSBlinux.cpp        363          printf("%s\n", APPTITLE  " " APPVERSION APPVERMINOR );
+CSBlinux.cpp        381      g_set_application_name ( "CSB" );
+CSBlinux.cpp        755                                                              g_print("                                              ");
+CSBUI.cpp            29    i8  byte0[4];           //"RIFF"
+CSBUI.cpp           291        strcat(fld[0]," ");
+CSBUI.cpp           411      if (strcmp(field, "") ==0) continue;
+CSBUI.cpp           412      if (strcmp(field, "KEY")==0)
+CSBUI.cpp           420      if (strcmp(field,"SCAN")==0)
+CSBUI.cpp           428      if (strcmp(field,"MSCAN")==0)
+CSBUI.cpp           439        if (strcmp(button,"L")==0) type=TYPEMSCANL; else type=TYPEMSCANR;
+CSBUI.cpp           443      if (strcmp(field,"DIRECTORY")==0)
+CSBUI.cpp           455      if (strcmp(field,"PLACE") == 0)
+CSBUI.cpp          1446    if (strcmp(key,"DIRECTORY")==0)
+CSBUI.cpp          1463    if (strcmp(key,"REPEAT") == 0)
+CSBUI.cpp          1468    if (strcmp(key,"HEIGHT") == 0)
+CSBUI.cpp          1473    if (strcmp(key,"QUICK") == 0)
+CSBUI.cpp          1478    if (strcmp(key,"VBLMULTIPLIER") == 0)
+CSBUI.cpp          1483    if (strcmp(key,"DUNGEON") == 0)
+CSBUI.cpp          1488    if (strcmp(key,"WIDTH") == 0)
+CSBUI.cpp          1493    if (strcmp(key,"X") == 0)
+CSBUI.cpp          1498    if (strcmp(key,"Y") == 0)
+CSBUI.cpp          1503    if (strcmp(key,"SIZE") == 0)
+CSBUI.cpp          1506      if (strcmp(value,"FULL") == 0)
+CSBUI.cpp          1510      if (strcmp(value,"EXTRALARGE") == 0)
+CSBUI.cpp          1515      if (strcmp(value,"VERYLARGE") == 0)
+CSBUI.cpp          1520      if (strcmp(value,"LARGE") == 0)
+CSBUI.cpp          1525      if (strcmp(value,"SMALL") == 0)
+CSBUI.cpp          1532    if (strcmp(key,"SPEED") == 0)
+CSBUI.cpp          1539      if (strcmp(value,"GLACIAL") == 0) csbMessage.p2 = SPEED_GLACIAL;
+CSBUI.cpp          1540      if (strcmp(value,"MOLASSES") == 0) csbMessage.p2 = SPEED_MOLASSES;
+CSBUI.cpp          1541      if (strcmp(value,"VERYSLOW") == 0) csbMessage.p2 = SPEED_VERYSLOW;
+CSBUI.cpp          1542      if (strcmp(value,"SLOW") == 0) csbMessage.p2 = SPEED_SLOW;
+CSBUI.cpp          1543      if (strcmp(value,"NORMAL") == 0) csbMessage.p2 = SPEED_NORMAL;
+CSBUI.cpp          1544      if (strcmp(value,"FAST") == 0) csbMessage.p2 = SPEED_FAST;
+CSBUI.cpp          1545      if (strcmp(value,"QUICK") == 0) csbMessage.p2 = SPEED_QUICK;
+CSBUI.cpp          1548    if (strcmp(key,"PLAY") == 0)
+CSBUI.cpp          1555    if (strcmp(key,"RECORD") == 0)
+CSBUI.cpp          1560    if (strcmp(key,"NORECORD") == 0)
+CSBUI.cpp          1565    if (strcmp(key,"DIRECTX") == 0)
+CSBUICE2002.cpp     296        strcat(fld[0]," ");
+CSBUICE2002.cpp     426      if (strcmp(field, "") ==0) continue;
+CSBUICE2002.cpp     427      if (strcmp(field, "KEY")==0)
+CSBUICE2002.cpp     435      if (strcmp(field,"SCAN")==0)
+CSBUICE2002.cpp     443      if (strcmp(field,"MSCAN")==0)
+CSBUICE2002.cpp     454        if (strcmp(button,"L")==0) type=TYPEMSCANL; else type=TYPEMSCANR;
+CSBUICE2002.cpp     458      if (strcmp(field,"DIRECTORY")==0)
+CSBUICE2002.cpp     470      if (strcmp(field,"PLACE") == 0)
+CSBUICE2002.cpp     888        ASSERT(0,"CSBUI");
+CSBUICE2002.cpp    1231    if (strcmp(key,"DIRECTORY")==0)
+CSBUICE2002.cpp    1248    if (strcmp(key,"REPEAT") == 0)
+CSBUICE2002.cpp    1253    if (strcmp(key,"HEIGHT") == 0)
+CSBUICE2002.cpp    1258    if (strcmp(key,"QUICK") == 0)
+CSBUICE2002.cpp    1263    if (strcmp(key,"VBLMULTIPLIER") == 0)
+CSBUICE2002.cpp    1268    if (strcmp(key,"DUNGEON") == 0)
+CSBUICE2002.cpp    1273    if (strcmp(key,"WIDTH") == 0)
+CSBUICE2002.cpp    1278    if (strcmp(key,"X") == 0)
+CSBUICE2002.cpp    1283    if (strcmp(key,"Y") == 0)
+CSBUICE2002.cpp    1288    if (strcmp(key,"SIZE") == 0)
+CSBUICE2002.cpp    1291      if (strcmp(value,"FULL") == 0)
+CSBUICE2002.cpp    1295      if (strcmp(value,"EXTRALARGE") == 0)
+CSBUICE2002.cpp    1300      if (strcmp(value,"VERYLARGE") == 0)
+CSBUICE2002.cpp    1305      if (strcmp(value,"LARGE") == 0)
+CSBUICE2002.cpp    1310      if (strcmp(value,"SMALL") == 0)
+CSBUICE2002.cpp    1317    if (strcmp(key,"PLAY") == 0)
+CSBUICE2002.cpp    1324    if (strcmp(key,"RECORD") == 0)
+CSBUICE2002.cpp    1329    if (strcmp(key,"NORECORD") == 0)
+CSBUICE2002.cpp    1334    if (strcmp(key,"DIRECTX") == 0)
+CSBwin.cpp          316        hWnd = CreateWindow(szWindowClass, "",WS_POPUP,
+CSBwin.cpp          836              sprintf(msg,"                                              ");
+CSBwin.cpp          851              sprintf(msg,"                                              ");
+CSBWinCE2002.cpp    832              sprintf(msg,"                                              ");
+CSBWinCE2002.cpp    847              sprintf(msg,"                                              ");
+data.cpp            139    for (f=0, folder="traces/"; f<2; f++, folder="")
+data.cpp            141    for (f=0, folder="\\traces\\"; f<2; f++, folder="")
+data.cpp            158                "",MESSAGE_OK);
+data.cpp            175                "",MESSAGE_OK);
+data.cpp           1695                "",MESSAGE_OK);
+data.cpp           1951      sprintf(msg,"Cannot open Playfile \"%s\"",PlayfileName);
+data.cpp           1952      UI_MessageBox(msg,"",MESSAGE_OK);
+data.cpp           1975        UI_MessageBox(msg,"",MESSAGE_OK);
+data.cpp           2486  char *tracePrefix = "                                      ";
+Hint.cpp            419    {0xd,0x01,0,0x7f,0x00c2,0xb3,0xc0,0x0,"LOAD"  ,0x1},
+Hint.cpp            420    {0xd,0x03,0,0x21,0x0064,0xb3,0xc0,0x0,"LAST"  ,0x1},
+Hint.cpp            422    {0xd,0x04,0,0x7f,0x00c2,0xb3,0xc0,0x0,"NEXT"  ,0x1},
+Hint.cpp            423    {0xd,0x05,0,0xdd,0x0121,0xb3,0xc0,0x0,"DONE"  ,0x1},
+Hint.cpp            432    {0xd,0x06,0,0x7f,0x00c2,0xb3,0xc0,0x0,"OK"    ,0x1},
+Hint.cpp            433    {0xd,0x02,0,0xdd,0x0121,0xb3,0xc0,0x0,"EXIT"  ,0x1},
+Hint.cpp            435    {0xd,0x07,0,0xdd,0x0121,0xb3,0xc0,0x0,"CANCEL",0x1}
+Hint.cpp            552    "",              //[0]8858
+Hint.cpp            553    "",              //[1]8854
+Hint.cpp           5145                  "SAVE FILE ERROR",
+Hint.cpp           5290              "SELECT SAVE GAME",
+Hint.cpp           5292              "",
+Hint.cpp           5294              "CSBGAME",
+Hint.cpp           6006        //D0W = index of hint title (0xb4 = "DEMON DIRECTOR")
+Hint.cpp           6528            dumpFile = CREATE("HINTDUMP.TXT","w", true);
+HintCE.cpp          395    {0xd,0x01,0,0x7f,0x00c2,0xb3,0xc0,0x0,"LOAD"  ,0x1},
+HintCE.cpp          396    {0xd,0x03,0,0x21,0x0064,0xb3,0xc0,0x0,"LAST"  ,0x1},
+HintCE.cpp          398    {0xd,0x04,0,0x7f,0x00c2,0xb3,0xc0,0x0,"NEXT"  ,0x1},
+HintCE.cpp          399    {0xd,0x05,0,0xdd,0x0121,0xb3,0xc0,0x0,"DONE"  ,0x1},
+HintCE.cpp          407    {0xd,0x06,0,0x7f,0x00c2,0xb3,0xc0,0x0,"OK"    ,0x1},
+HintCE.cpp          408    {0xd,0x02,0,0xdd,0x0121,0xb3,0xc0,0x0,"EXIT"  ,0x1},
+HintCE.cpp          410    {0xd,0x07,0,0xdd,0x0121,0xb3,0xc0,0x0,"CANCEL",0x1}
+HintCE.cpp          527    "",              //[0]8858
+HintCE.cpp          528    "",              //[1]8854
+HintCE.cpp         5030                  "SAVE FILE ERROR",
+HintCE.cpp         5175              "SELECT SAVE GAME",
+HintCE.cpp         5177              "",
+HintCE.cpp         5179              "CSBGAME",
+HintCE.cpp         5856        //D0W = index of hint title (0xb4 = "DEMON DIRECTOR")
+HintCE.cpp         6375            dumpFile = CREATE("HINTDUMP.TXT","w", true);
+LinCSBUI.cpp        191        strcat(fld[0]," ");
+LinCSBUI.cpp        314      if (strcmp(field, "") ==0) continue;
+LinCSBUI.cpp        315      if (strcmp(field, "KEY")==0)
+LinCSBUI.cpp        323      if (strcmp(field,"SCAN")==0)
+LinCSBUI.cpp        331      if (strcmp(field,"MSCAN")==0)
+LinCSBUI.cpp        342        if (strcmp(button,"L")==0) type=TYPEMSCANL; else type=TYPEMSCANR;
+LinCSBUI.cpp        346      if (strcmp(field,"DIRECTORY")==0)
+LinCSBUI.cpp        359       if (strcmp(field,"TIMER")==0)
+LinCSBUI.cpp        367      if (strcmp(field,"PLACE") == 0)
+LinCSBUI.cpp        809     gtk_container_add (GTK_CONTAINER (hbox),gtk_label_new(""));
+LinCSBUI.cpp        811     gtk_container_add (GTK_CONTAINER (hbox),gtk_label_new(""));
+LinCSBUI.cpp        841    ASSERT(keyQueueStart != keyQueueEnd, "");
+LinCSBUI.cpp       1007    i8  byte0[4];           //"RIFF"
+LinCSBUI.cpp       1278  //                  root = ""; // Nasty hack. :o)
+LinScreen.cpp       278       : "S" (*STScreen), "D" (numLine) // FIXASM: input regs, e.g.:  "c" (count), "S" (src), "D" (dest)
+LinScreen.cpp       348       :  // FIXASM: input regs, e.g.:  "c" (count), "S" (src), "D" (dest)
+LinScreen.cpp       433       : // FIXASM: input regs, e.g.:  "c" (count), "S" (src), "D" (dest)
+LinScreen.cpp       531       : // FIXASM: input regs, e.g.:  "c" (count), "S" (src), "D" (dest)
+LinScreen.cpp       662       : // FIXASM: input regs, e.g.:  "c" (count), "S" (src), "D" (dest)
+Magic.cpp           166    QuePrintLines(color, " JUST GAINED A ");
+Magic.cpp           167    QuePrintLines(color, d.Pointer16596[basicSkill]); //"FIGHTER", "NINJA", etc
+Magic.cpp           168    QuePrintLines(color, " LEVEL");
+Magic.cpp           981    pnt msg="UNKNOWN SPELL ERROR";
+Magic.cpp           991      msg = " NEEDS MORE PRACTICE WITH THIS ";
+Magic.cpp           992      QuePrintLines(4, " NEEDS MORE PRACTICE WITH THIS ");
+Magic.cpp           994      msg = " SPELL.";
+Magic.cpp          1000        msg = " MUMBLES A MEANINGLESS SPELL.";
+Magic.cpp          1005      msg = " NEEDS AN EMPTY FLASK IN HAND FOR POTION.";
+Magic.cpp          1089      msg = "";
+Magic.cpp          1092      msg = "THAT IS A DIFFICULT SPELL.  STUDY IT.";
+Magic.cpp          1095      msg = "THE SPELL FIZZLES.";
+Magic.cpp          1098      msg = "THE SPELL FIZZLES AND DIES.";
+Magic.cpp          1101      msg = "THIS SPELL IS TOO DIFFICULT.";
+Magic.cpp          1107      msg = "THIS SPELL REQUIRES A COMPONENT.";
+Monster.cpp        2881        ASSERT(D0W != 0xccc,"IC");                                    //IC
+Mouse.cpp          1685                      "GAME FROZEN");
+SaveGame.cpp        804             "SAVES ARE DISABLED",
+SaveGame.cpp        805             "OK",
+SaveGame.cpp        834             "READY TO SAVE GAME",       // "Put the Game Save Disk in ~"
+SaveGame.cpp       1597    D0W = OPEN("DUNGEON.FTL","rb");
+SaveGame.cpp       1841      ItemsRemainingOK = true; //Enable Menu "view" "items remaining"
+Timer.cpp          1309                    pActuator->normallyClosed()?"NC":"NO");
+utility.cpp         220    TAG0004fe(b_108, "FTLCODE");
+utility.cpp         221    //TAG0004fe(b_108, "CHAOS.FTL");

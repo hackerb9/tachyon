@@ -3722,14 +3722,12 @@ void ProcessTimers29to41(
     {
       mmr.Setflg(TT29to41_w30w32GretaterThan3);
       TIMERTRACE(0xd068);
-//      i_60 = d.Time + BITS4_7(mtDescLocal.word20);
-      i_60 = d.Time + mtDescLocal.AdditionalDelayFromMoveToAttack();
+      i_60 = d.Time + BITS4_7(mtDescLocal.word20);
       if (AITraceActive)
       {
         fprintf(GETFILE(TraceFile),
-                  "      MAI fearFactor != 6.  Distance to party > 3. AdditionalDelayAfter(move/attack) = %d, %d\n",
-                  mtDescLocal.AdditionalDelayFromMoveToAttack(),
-				  mtDescLocal.AdditionalDelayFromAttackToMove());
+                  "      MAI fearFactor != 6.  Distance to party > 3.  mt->word20 = %d\n",
+                  mtDescLocal.word20);
       };
       Set_Monster_Timer(
                        timer_70,
@@ -3998,8 +3996,7 @@ void ProcessTimers29to41(
                             D4W,
                             MonsterAttacks(monster,DB4A3,mapX,mapY,D4W));
           w_110 = STRandomBool();
-          //D0L = ((mtDescLocal.word20 & 15) + w_110) & 0xffff;
-          D0L = ((mtDescLocal.Word20_0_3()) + w_110) & 0xffff;
+          D0L = ((mtDescLocal.word20 & 15) + w_110) & 0xffff;
           //timer_70.timerTime += D0L;
           timer_70.Time(timer_70.Time() + D0L);
         }

@@ -31,6 +31,7 @@ extern ui8 monsterMoveInhibit[4];
 extern i32 numGlobalVariables;
 extern ui32 *globalVariables;
 bool dsaActive = false;
+extern bool SupressDSAWarningOption;
 extern i32 xGraphicJitter;
 extern i32 yGraphicJitter;
 extern i32 xOverlayJitter;
@@ -2974,7 +2975,7 @@ static void EX_AMPERSAND(EXECUTIONPACKET& exPkt, int cmdOffset)
           message("DSA &PARAM@ non-existent parameter");
           for (j=pDSAparameters[0]; j<n; j++)
           {
-            pdsaDbank->Var(0);
+            pdsaDbank->Var(j);
             pdsaDbank->SetVarState(i+j, DVT_NonParameter);
           };
           n = pDSAparameters[0];
@@ -3187,7 +3188,7 @@ static void EX_AMPERSAND(EXECUTIONPACKET& exPkt, int cmdOffset)
                  GetRecordAddressDB2(RNtext),
                  (ui16)0x8002,
                  999);
-      len = strlen(ExpandedText);
+      len = (i32)strlen(ExpandedText);
       pdsaDbank->SetText(ExpandedText, len, textIndex);
     };
     break;
@@ -5388,6 +5389,10 @@ bool ProcessDSATimer6(RN objSlave,
                             &masterX, &masterY, &masterPos);
   locrMaster.x = masterX;
   locrMaster.y = masterY;
+  if ((masterX==8) && (masterY==24) && (level==16))
+  {
+    int kkk=1;
+  };
   locrMaster.p = objMaster.pos();
   pDBMaster = GetRecordAddressDB3(objMaster);
   levelDSAindex = pDBMaster->DSAselector();
@@ -5468,7 +5473,7 @@ bool ProcessDSATimer6(RN objSlave,
       if (    (d.Time < prevTime + 6) 
           || ((6*operationCount) > 50000*(d.Time-prevTime)))
       {
-        if (!IsPlayFileOpen())
+        if (!SupressDSAWarningOption && !IsPlayFileOpen())
         {
           const char *m = "Excessive DSA operations.\nThis is the LAST warning.";
           UI_MessageBox(m,"Warning",MESSAGE_OK);

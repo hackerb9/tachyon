@@ -146,7 +146,8 @@ i32 WINAPI wWinMain(HINSTANCE hInstance,
 
 //#else
 #endif
-i32 WINAPI WinMain(HINSTANCE hInstance ,
+//i32 WINAPI WinMain(HINSTANCE hInstance ,
+int WINAPI WinMain(HINSTANCE hInstance ,
 	HINSTANCE /*hPrevInstance*/,
 	LPSTR     /*lpCmdLine*/,
 	int       nCmdShow)
@@ -206,7 +207,8 @@ i32 WINAPI WinMain(HINSTANCE hInstance ,
 	}
   Cleanup(true); //Program termination
   UI_CheckMemoryLeaks();
-	return msg.wParam;
+	//return msg.wParam;
+	return (int)msg.wParam;
 }
 
 void ProcessCommandLine(void)
@@ -903,7 +905,7 @@ LRESULT CALLBACK WndProc(HWND _hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             Y = videoSegY[4];
           };
           Y += 15 *line;
-          TextOutA(hdc,X,Y,msg,strlen(msg));
+          TextOutA(hdc,X,Y,msg,(int)strlen(msg));
         };
       };
       csbMessage.type=UIM_PAINT;
@@ -1060,7 +1062,8 @@ LRESULT CALLBACK WndProc(HWND _hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_KEYDOWN:
       MTRACE("WM_KEYDOWN\n"); 
       csbMessage.type=UIM_KEYDOWN;
-      csbMessage.p1 = wParam; //virtual key
+      //csbMessage.p1 = wParam; //virtual key
+      csbMessage.p1 = (i32)wParam; //virtual key
       csbMessage.p2 = (lParam>>16)&0xff; //scancode
       if (CSBUI(&csbMessage) != UI_STATUS_NORMAL)
       {
@@ -1074,7 +1077,8 @@ LRESULT CALLBACK WndProc(HWND _hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CHAR:
       MTRACE("WM_CHAR\n"); 
       csbMessage.type=UIM_CHAR;
-      csbMessage.p1 = wParam;
+      //csbMessage.p1 = wParam;
+      csbMessage.p1 = (i32)wParam;
       if (CSBUI(&csbMessage) != UI_STATUS_NORMAL)
       {
         PostQuitMessage(0);

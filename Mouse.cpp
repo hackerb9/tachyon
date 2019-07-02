@@ -1743,7 +1743,7 @@ RESTARTABLE _HandleMouseEvents(const i32 delta)
                     0, 
                     "GAME FROZEN",
                     999,
-                    false);
+                    true);
     MarkViewportUpdated(2);
     d.Pointer18982 = d.PrimaryButtonList;
     d.Pointer18986 = d.SecondaryButtonList;

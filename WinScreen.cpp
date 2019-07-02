@@ -1508,7 +1508,7 @@ void display (void){
   ForcedScreenDraw = false;
   {
     areaChangedCount = 0;
-    if (!virtualFullscreen)
+    UI_ScreenStartUpdates();    if (!virtualFullscreen)
     {
       i32 size = screenSize;
       areaChangedCount +=
@@ -1639,9 +1639,11 @@ void display (void){
                          false);
       };
     };
+    UI_ScreenEndUpdates();
     if (areaChangedCount)
     {
       memcpy(prevScreen, physbase(), 32000);
+      UI_ScreenPresent();
     };
   };
 #ifdef _MOVIE

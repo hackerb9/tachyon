@@ -969,15 +969,15 @@ RESTARTABLE _FlashAttackDamage(const i32 value)
   {
     if (damage == -1)
     {
-      D5W = 242;
+      D5W = 224+48;
       A2 = "CAN'T REACH";
     }
     else
     {
-      D5W = 248;
+      D5W = 224+48;
       A2 = "NEED AMMO";
     };
-    TextOutToScreen(D5W, 100, 4, 0, A2, true);
+    TextOutToScreen_Centered(D5W, 100, 4, 0, A2, true);
   }
   else
   {

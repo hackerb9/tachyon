@@ -50,7 +50,7 @@ void TraceTimer(TIMER *pTimer, i32 index, const char *msg)
   if (!TimerTraceActive) return;
   memset(Msg,' ',14);
   Msg[14] = 0;
-  len=strlen(msg);
+  len=(i32)strlen(msg);
   if (len>14) len=14;
   memcpy(Msg,msg,len);
   fprintf(GETFILE(TraceFile),"%08x timer %s %03x %02x "
@@ -1739,7 +1739,7 @@ void ProcessTT_OPENROOM(TIMER *pTimer, ui32 index)
                    GetRecordAddressDB2(objD4), 
                    1, 
                    990);
-        QuePrintLines(15, text);
+        QuePrintLines(15, text, true);
       };
     } // End DB2 code
     else

@@ -34,7 +34,7 @@ public:
   void push_back(const char *line)
   {
     LQENTRY *newEnt, *last;
-    newEnt = (LQENTRY *)UI_malloc(sizeof(LQENTRY) + strlen(line), MALLOC124);
+    newEnt = (LQENTRY *)UI_malloc(sizeof(LQENTRY) + (ui32)strlen(line), MALLOC124);
     newEnt->m_pNext = NULL;
     strcpy(newEnt->m_line, line);
     last = m_pFirst;

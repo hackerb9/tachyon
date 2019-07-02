@@ -171,10 +171,10 @@ void LevelUp(i32 chIdx, i32 basicSkill) // Fighter, ninja, etc.
   d.CH16482[chIdx].charFlags |= CHARFLAG_statsChanged;
   DrawCharacterState(chIdx);
   PrintLinefeed();
-  QuePrintLines(color = (UI8)(d.Byte1386[chIdx]), d.CH16482[chIdx].name);
-  QuePrintLines(color, " JUST GAINED A ");
-  QuePrintLines(color, d.Pointer16596[basicSkill]); //"FIGHTER", "NINJA", etc
-  QuePrintLines(color, " LEVEL");
+  QuePrintLines(color = (UI8)(d.Byte1386[chIdx]), d.CH16482[chIdx].name, false);
+  QuePrintLines(color, " JUST GAINED A ", true);
+  QuePrintLines(color, d.Pointer16596[basicSkill], true); //"FIGHTER", "NINJA", etc
+  QuePrintLines(color, " LEVEL", true);
 // ***********************************************************
 }
 
@@ -1010,28 +1010,27 @@ void SpellErrorMsg(CHARDESC *pChar,i16 P2,i16 P3)
     P3 = sw(((P3-4)&0xffff) / 4);
   };
   PrintLinefeed();
-  QuePrintLines(4, pChar->name);
+  QuePrintLines(4, pChar->name, false);
   if (P2 == 0)
   {
-    msg = TranslateLanguage(" NEEDS MORE PRACTICE WITH THIS ");
-    QuePrintLines(4, msg);
-    QuePrintLines(4, TranslateLanguage(d.Pointer16596[P3]));
-    msg = TranslateLanguage(" SPELL.");
+    msg = " NEEDS MORE PRACTICE WITH THIS ";
+    QuePrintLines(4, msg, true);
+    QuePrintLines(4, d.Pointer16596[P3], true);
+    msg = " SPELL.";
   }
   else
   {
     if (P2 == 1)
     {
-      msg = TranslateLanguage(" MUMBLES A MEANINGLESS SPELL.");
+      msg = " MUMBLES A MEANINGLESS SPELL.";
     }
     else
     {
       if (P2 == 10)
-    msg = TranslateLanguage(" NEEDS AN EMPTY FLASK IN HAND FOR POTION.");
+    msg = " NEEDS AN EMPTY FLASK IN HAND FOR POTION.";
     };
   };
-  msg = TranslateLanguage(msg);
-  QuePrintLines(4, msg);
+  QuePrintLines(4, msg, true);
 }
 //       TAG01c9b2
 DB8 *GetFlaskInHand(CHARDESC *pChar,RN *pObject)
@@ -1063,7 +1062,7 @@ void StandardSpellMessage(const char *text, int charIndex=0)
   pPercent = strchr(text,'%');
   if (pPercent != NULL)
   {
-    i32 i, len = strlen(text);
+    i32 i, len = (i32)strlen(text);
     char *newText;
     newText = (char *)UI_malloc(len+20,MALLOC088);
     memcpy(newText, text, pPercent-text);
@@ -1073,12 +1072,12 @@ void StandardSpellMessage(const char *text, int charIndex=0)
       newText[pPercent-text+i] = d.CH16482[charIndex].name[i];
     };
     strcpy(newText+(pPercent-text)+i, text+(pPercent-text)+1);
-    QuePrintLines(4,newText);
+    QuePrintLines(4,newText, false);
     UI_free(newText);
   }
   else
   {
-    QuePrintLines(4, text);
+    QuePrintLines(4, text, false);
   };
 }
 

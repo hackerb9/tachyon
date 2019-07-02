@@ -19,11 +19,45 @@ void settrace(i32 n);
 
 
 bool IsPlayFileOpen(void);
+const char *TranslateLanguage(const char *text);
 
 extern bool version90Compatible;
 extern bool drawAsSize4Monsters;
 extern TIMER missileFilterTimer;
 
+
+void DescribeChampionBones(char *dest, const char *pName, const char *objName)
+{
+  const char *pxlate;
+  int colSrc, colDst, colName;
+  char search[50];
+  search[0] = '%';
+  search[1] = ' ';
+  strcpy(search+2,objName);
+  pxlate = TranslateLanguage(search);
+//  if (strcmp(pxlate, "%BONES") == 0)
+//  {
+//    // There is no translation so use the graphics.dat name for bones
+//    StrCpy(dest, pName);
+//    StrCat(dest, " ");
+//    StrCat(dest, TranslateLanguage(objName));
+//    return;
+//  };
+  // Copy pxlate to dest, substituting pName for any '%'
+  for (colDst = 0, colSrc = 0; pxlate[colSrc] != 0; colSrc++)
+  {
+    if (pxlate[colSrc] == '%')
+    {
+      for (colName=0; pName[colName]!=0; colName++)
+      {
+        dest[colDst++] = pName[colName];
+      };
+      continue;
+    }
+    dest[colDst++] = pxlate[colSrc];
+  };
+  dest[colDst] = 0;
+}
 
 // *********************************************************
 //
@@ -31,10 +65,11 @@ extern TIMER missileFilterTimer;
 //   TAG0012a0
 void DrawNameOfHeldObject(RN object)
 {
-  char *pName = NULL;
+  const char *pName = NULL;
+  bool finalTranslate = true;
   OBJ_NAME_INDEX objNID6;
   CHARDESC *pcA0;
-  char LOCAL_16[16];
+  char LOCAL_16[999];
 //;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   objNID6 = object.NameIndex();
   if (objNID6 == objNI_Bones_a) // bones
@@ -53,9 +88,9 @@ void DrawNameOfHeldObject(RN object)
         if (character.CopyCharacter(bonesRecord[0]))
         {
           pcA0 = &character;
-          StrCpy(LOCAL_16, pcA0->name);
-          StrCat(LOCAL_16, d.ObjectNames[objNID6]);
+          DescribeChampionBones(LOCAL_16, pcA0->name, d.ObjectNames[objNID6]);
           pName = LOCAL_16;
+          finalTranslate = false;
         };
       };
     };
@@ -71,11 +106,11 @@ void DrawNameOfHeldObject(RN object)
            0x25,
            4,
            0,
-           pName,
+           finalTranslate ? TranslateLanguage(pName): pName,
            14);
 }
 
-// *********************************************************
+// ********************************************************
 //
 // *********************************************************
 //   TAG00135c
@@ -3960,7 +3995,10 @@ void PlaceOrRemoveObjectInRoom(
           if (DecodeText(text, GetRecordAddressDB2(objD6), 1, 990)
                  != -1)
           {
-            QuePrintLines(15, text);
+            const char *pText;
+            pText = TranslateLanguage(text+1); // Skipping the leading '\n'
+            strcpy(text+1,pText);
+            QuePrintLines(15, text, false);
           };
           //PrintLines(15, d.Byte12914);
         }

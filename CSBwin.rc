@@ -218,8 +218,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 17,7,0,0
+ PRODUCTVERSION 17,7,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -234,14 +234,18 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
+            VALUE "Comments", "\0"
             VALUE "CompanyName", "home\0"
             VALUE "FileDescription", "CSBwin\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "FileVersion", "17, 7, 0, 0\0"
             VALUE "InternalName", "CSBwin\0"
             VALUE "LegalCopyright", "Copyright © 2001\0"
+            VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "CSBwin.exe\0"
+            VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "home CSBwin\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "ProductVersion", "17, 7, 0, 0\0"
+            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -319,7 +323,7 @@ BEGIN
     IDS_APP_TITLE           "CSB for Windows"
     IDS_HELLO               "Hello World!"
     IDC_CSBWIN              "CSBWIN"
-    IDS_VERSION             "CSB for Windows/Linux Version 15.9"
+    IDS_VERSION             "CSB for Windows/Linux Version 17.7"
 END
 
 STRINGTABLE DISCARDABLE 

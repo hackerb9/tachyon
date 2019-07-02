@@ -162,7 +162,7 @@ RESTARTABLE _ShowCredits(const i32 P1) //(void)
 //
     };
     wvbl(_3_);
-    MemMove((ui8 *)&LOCAL_78, (ui8 *)&d.Palette11978, 32);
+    MemMove((ui8 *)&LOCAL_78, &d.Palette11978, 32);
   }
   else
   {
@@ -202,9 +202,9 @@ RESTARTABLE _ShowCredits(const i32 P1) //(void)
           D4W = sw(Smaller(16, D0W));
           if (D4W == 1) continue;
           if (D4W == 0) die (0x8d49,"Mastery = 0");
-          StrCpy((char *)LOCAL_130, d.Pointer16770[D4W]);
+          StrCpy((char *)LOCAL_130, TranslateLanguage(d.Pointer16770[D4W]));
           StrCat((char *)LOCAL_130, " ");
-          StrCat((char *)LOCAL_130, d.Pointer16596[D5W]);
+          StrCat((char *)LOCAL_130, TranslateLanguage(d.Pointer16596[D5W]));
           DisplayHeroName(105, D6W=sw(D6W+8), 13, (char *)LOCAL_130);
 //
         };
@@ -244,7 +244,7 @@ tag01fd10:
       ForceScreenDraw();
       wvbl(_21_);
       FillRectangle(d.LogicalScreenBase, (RectPos *)d.Word124, 0, 160);
-      TextOutToScreen(110, 0x9a, 4, 0, "RESTART THIS GAME");
+      TextOutToScreen(110, 0x9a, 4, 0, TranslateLanguage("RESTART THIS GAME"));
       LOCAL_46.color[1] = 0x437;
       LOCAL_46.color[4] = 0x777;
       d.PrimaryButtonList = d.Buttons16956;

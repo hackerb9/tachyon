@@ -333,8 +333,10 @@ struct SEGMENTDESC
 //  TAG000ad2
 i16 LoadProgram(STRUCT148 *s148)
 {
-  dReg D0, D3, D7;
-  aReg A0;
+  dReg D0;
+  //dReg D3;
+  dReg D7;
+  //aReg A0;
   bool exitFlag; //Escape from 'do-loop'.
   i8  *p_128;
   SEGMENTDESC  *pSegDesc;//p_118;
@@ -579,6 +581,7 @@ i16 LoadProgram(STRUCT148 *s148)
       };
 //
     };
+#ifdef whilei10
     while (i_10 > 0)
     {
       D3W = littleEndian(wordGear(p_42));
@@ -590,6 +593,9 @@ i16 LoadProgram(STRUCT148 *s148)
       i_10 -= 2;
 //
     };
+#else
+    NotImplemented(0x5acb);
+#endif
     p_42 = p_38;
     i_14 = LE32(pSegDesc[Segment18].Length);
     D0L = LE32(pSegDesc[Segment18].Offset);
