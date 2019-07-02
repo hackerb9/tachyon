@@ -390,7 +390,7 @@ public:
   BACKGROUND_MASK  *GetMask(ui32 graphicID, ui32 maskNumber, ui32 minimumSize);
   BACKGROUND_MASK  *MaskExists(ui32 graphicID, ui32 maskNumber);
   ui32 *GetBitmap(ui32 graphicID, ui32 minimumSize, ui32 *bitmapSize);
-  void DumpGraphic(i32 graphicID, i32 maskNum, char *extension);
+  void DumpGraphic(i32 graphicID, i32 maskNum, const char extension[]);
   void InsertBitmap(ui32 ID, ui32 size, ui32 *address);
   BACKGROUND_MASK *CreateNewMask(ui32 ID, ui32 num, BACKGROUND_MASK *pMask);
   AFFINEMASK *CreateNewAffineMask(ui32 ID, ui32 num, AFFINEMASK *paffine);
