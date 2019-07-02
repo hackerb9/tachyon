@@ -1,0 +1,115 @@
+Hello! :)
+
+Here is a small list of the graphics I drew for Zyx's dungeon "Conflux II".
+If you enjoyed some of them, feel free to use them in your own dungeon if you wish! ^^
+
+- Charlatan75 -
+
+(Note : for some of these graphics, like the "wood beams" for example, I defined a whole new
+set of coordinates so that they are displayed exactly where I wanted... When I'll have time to
+translate my "notes on file 0558", I'll probably include these graphics & data as examples... ^^)
+
+-----------------------------------------------------------------------------------------------------
+Graph.	
+number	Dimensions
+-----------------------------------------------------------------------------------------------------
+
+0002	128x161		Left Entrance Door
+0003	128x161		Right Entrance Door
+
+** ITEMS IN INVENTORY SCREEN **
+
+0017	16x16 (x2)	Blue eye, mouth
+0023	144x73		Scroll (reading)
+0042	16x16 (x6)	Compass, "Cerberus"
+0043	16x16 (x2)	Double-edged "Executioner", magic slayer
+0044	16x16 (x28)	Capes, clothes and armours
+0045	16x16 (x18)	Helms, boots & armours feet, Crown of Kings, gloves, "Wrath" shield
+0046	16x16 (x11)	Gems, urns of the winds, Ven egg, Dexhelm, Flamebain, Powertowers
+0047	16x16 (x3)	"Spore eyes", spitter berries, stone mushroom, skullseeds
+0048	15x15 (x10)	Blue eye, mouth, backpack, quiver, pouch, boots of speed, "eye of Vichna"
+
+** WALL ORNATES **
+
+0141	32x111		"Neta" Altar (side view)
+0142	160x111		"Neta" Altar (front view)
+0147	32x111		Crumbled rocks in corridor (side view)
+0148	160x111		Crumbled rocks in corridor (front view)
+0201	32x111		Green tapestry (side view)
+0233	32x111		Skeleton (side view)
+0237	80x91		Wood beams (side view)
+0238	64x124		Wood beams (front view)
+0239	32x111		Red Tapestry (side view)
+
+** FLOOR ORNATES **
+
+0247	96x15		big grate
+0248	96x15		"
+0249	80x23		"
+0250	112x23		"
+0251	64x46		"
+0252	160x46		"
+0265	96x15		moss & water puddles
+0266	96x15		"
+0267	80x23		"
+0268	112x23		"
+0269	64x46		"
+0270	160x46		"
+0295	96x15		moss & water puddles
+0296	96x15		"
+0297	80x23		"
+0298	112x23		"
+0299	64x46		"
+0300	160x46		"
+
+** DOOR ORNATES **
+
+0304	96x88		"Cobra"
+0306	96x88		"Twin Dragons"
+0312	96x88		"Spiked" door
+
+** MISSILES **
+
+0327	128x24		magic slayer (front view)
+0328	128x24		magic slayer (back view)
+0329	128x24		magic slayer (side view)
+
+** ITEMS ON FLOOR **
+
+0368	64x18		Elven clothes/chainmail
+0369	80x24		Boots
+0386	32x23		Stone mushroom
+0388	32x15		Berries
+0389	32x13		Skullseeds
+0390	32x22		Dragon Helmet
+0395	16x7		Compass
+0398	64x44		Cerberus
+0407	48x7		Slayer
+0415	48x16		Gloves
+0416	64x25		Dragon armour feet/legs
+0418	48x23		Elven boots
+0424	32x46		Copper urn
+0428	16x18		Ven Egg
+0429	48x40		"Spore eye"
+0430	64x29		Dragon Armour
+0439	32x30		Crown of Kings
+0440	32x46		Grey urn
+0442	48x23		Boots of speed
+0445	80x24		"Wrath" shield
+
+** CREATURES **
+
+0446	144x108		"Super-giant" scorpion (front view)
+0447	144x108		"Super-giant" scorpion (side view)
+0448	144x108		"Super-giant" scorpion (back view)
+0449	144x108		"Super-giant" scorpion (attack)
+0450	96x98		"Spitter" tree (front view)
+0451	96x98		"Spitter" tree (attack)
+0509	64x84		Fire creature (front view)
+0510	64x84		Fire creature (front view 2)
+0511	64x84		Fire creature (front view 3)
+0512	64x84		Fire creature (attack)
+0523	64x96		Dark Councillor (front view)
+0524	64x96		Dark Councillor (side view)
+0525	64x96		Dark Councillor (back view)
+0526	64x96		Dark Councillor (attack)

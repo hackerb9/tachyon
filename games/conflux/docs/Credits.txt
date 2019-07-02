@@ -1,0 +1,48 @@
+This dungeon is the conflux of several talents and works...
+My thanks go to...
+
+ORIGINAL GAME:
+FTL team.
+Paul Stevens for the port to Windows, Linux, MacOs, Pocket PC...
+
+EDITORS:
+Paul Stevens for CSBuild and CSBwin. Thank you for your endless patience and efforts. (http://www.dianneandpaul.net/CSBwin)
+George Gilbert for DMute. (http://www.ragingmole.com)
+Sphenx for DMbuilder.
+Rain for the CSB Editor, the DMExtract and ADGE.
+Charlatan75 for his work on the file 558 and a tool for wallsets. (Where are you?)
+
+GRAPHICS:
+Drake (aka Cowsmanaut) and Charlatan75 for their work on most of the graphics (the ones which look good!). See file "C75 graphics.txt" for more details about Charlatan75's work.
+Gambit for the Cartographer's maps, and dozens of monsters.
+Adamo for the Giger walls.
+Sera for the blackcrypt monsters.
+Paul Hayes for some neat wallsets.
+
+SOUNDS:
+Cowsmanaut and Gambit for some nice samples. The rest by me. Yep, all stolen by myself on the web.
+
+HINTS:
+Ameena for some beautiful rhymes in the Oracle section.
+
+BACKGROUND:
+Beowuuf for an inspired extension of the characters background.
+
+SITES and TECHNICAL DOCUMENTATION:
+Cowsmanaut and Gambit for their work on the site (http://www.dungeon-master.com) and permiting the very existence of this community.
+Gambit for the maps microsite (http://www.resonantedge.com/conflux3maps/)
+Beowuuf for his Dmute manual.
+Charlatan75 for his documention about the file 558.
+Paul Stevens for documenting everything he codes in CSBwin. Double work!
+And of course, Christophe Fontanel for his encyclopedic site. (http://dmweb.free.fr) the dungeons are the fruits, he's the roots.
+
+PLAYTESTING: 
+Ileana, Martin, Charlatan75, PitD, Christopher, Parallax and Trantor for the testing, comments, help and bug reports. 
+Beowuuf as a lead playtester.
+
+COMPETITION JUDGES:
+Christophe, Beowuuf and PitD.
+
+MOTIVATION:
+TOMi for putting me back on the rails of dungeon design.
+Last but not least, thanks to all the community of players who enjoyed and/or criticized the previous versions!

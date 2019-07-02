@@ -1,0 +1,133 @@
+#CSB for Windows/Linux Version 15.7
+#                  0001 --> Turn Left
+#                  0002 --> Turn Right
+#                  0003 --> Move Forward
+#                  0004 --> Slide Right
+#                  0005 --> Move Backward
+#                  0006 --> Slide Left
+#                  000b --> Leave Inventory Screen
+#                  0046 --> Click mouth to feed
+#                  0047 --> Click eye to show skills
+#                  0050 --> Click in Viewport
+#                  0053 --> Select Inventory Screen
+#                  006f --> Select Attack Character/option
+#                  008c --> Select Disk option from inventory
+#                  0093 --> Freeze Game
+#                  0094 --> un-Freeze Game
+#                  00c9 --> Resume (at prison door)
+#                  00d2 --> First Menu option
+#                  00d3 --> Second Menu Option
+#                  00d4 --> Third Menu Option
+#                  0add --> Mouse button up
+#                  6665 --> Version Signiture
+#                  6666 --> Graphics Signiture
+#                  6667 --> Dungeon Signiture
+#                  6668 --> SaveGame Signiture
+#                  6669 --> LoadGame Signiture
+#                  666a --> CSBGraphic Signiture
+#                  ffff --> Drag out of chartacter order area
+## Parameters you can change
+##   #[No]DMRules
+##   #[No]ExtraTicks
+##   #[No]SpeedLimit //Quick Play
+##   #[No]Sleep //Skip over any delays for flashing buttons, etc
+##   #FastVBLnn // Set VBL multiplier (go fast); If not equal one then
+##              // Only display every third frame.  99 is a special case
+##              // that goes fast AND displays every frame
+##   #TimerTrace<On/Off>
+##   #AITrace<On/Off>
+##   #DSATrace<On/Off>
+00000000 0108 0030 00c8 26fc3e06
+00000000 26fc 3e06 3333 26fc3e06
+#NoDMRules
+#NoDMRules
+#DMRules
+0000001f 1354 c22a 6666 ee5ae5e8
+0000001f 176a 5076 6667 8288d9d3
+0000001f 4210 c71e 6665 7b81dc22
+0000001f 00fc 0096 0006 401a3e05
+00000020 0000 0000 0add 3fd28ae5
+00000031 0101 009a 0006 06b0db0a
+00000032 0000 0000 0add 942cbec8
+00000037 00f3 0082 0001 22ba2795
+00000038 0000 0000 0add b75bf950
+0000003b 00f3 0082 0001 190f9c0d
+0000003c 0000 0000 0add a8d1641d
+0000003d 00f3 0082 0001 95e2bb0e
+0000003e 0000 0000 0add bb5358f2
+00000042 012a 0081 0002 096be262
+00000043 0000 0000 0add 382d6ec1
+00000045 0123 0082 0002 c72fef4c
+00000046 0000 0000 0add 27ed657a
+00000048 0123 0082 0002 aea81f43
+00000049 0000 0000 0add 8a393982
+00000051 0128 0082 0002 21d0cc27
+00000052 0000 0000 0add 590ab28f
+00000053 0128 0082 0002 0db7c269
+00000054 0000 0000 0add 9f09cc50
+00000057 0119 0080 0003 af973557
+00000058 0000 0000 0add f36ead9f
+00000073 0119 0080 0003 8cf826ee
+00000074 0000 0000 0add a1533a40
+00000095 00a0 009d 0050 3c7d3e2c
+00000096 0000 0000 0add 3b48f888
+00000098 007f 0076 0050 8ff43a5b
+00000099 0000 0000 0add c0eee295
+0000009c 0118 0089 0003 9f13679a
+0000009d 0000 0000 0add 5944e1f8
+000000a3 012c 0083 0002 46e6a193
+000000a4 0000 0000 0add b46a0077
+000000a5 012c 0083 0002 69ba206d
+000000a6 0000 0000 0add 0d6a0b7a
+000000b9 0061 0098 0050 6064612c
+000000ba 0000 0000 0add fdcf4db9
+000000bb 0055 0099 0050 e10409fc
+000000bc 0000 0000 0add 46926dcf
+000000bd 0044 009e 0050 0ffb3a96
+000000be 0000 0000 0add f3111ec0
+000000bf 00a9 0097 0050 0e192045
+000000c0 0000 0000 0add 6288be59
+000000c0 008d 0099 0050 6288be59
+000000c1 0000 0000 0add 2f7f3bc2
+000000c4 0010 009b 0050 4c67d8c3
+000000c5 0000 0000 0add 29d1a789
+000000c6 003b 009a 0050 177a1cc2
+000000c7 0000 0000 0add d0da9c96
+000000c7 0044 009e 0050 d0da9c96
+000000c8 0000 0000 0add 117a1878
+000000c9 0044 009e 0050 4d338b5e
+000000ca 0000 0000 0add 61426769
+000000cd 006f 0053 0050 a281c94b
+000000ce 0000 0000 0add 6fddd031
+000000ce 006f 0053 0050 6fddd031
+000000cf 0000 0000 0add 8c743e4d
+000000d1 00fd 008a 0001 c79354cd
+000000d2 0000 0000 0add 1180b255
+000000d4 00fd 008a 0001 b7d0b735
+000000d5 0000 0000 0add d8fc9cd7
+000000dc 010f 0083 0003 5a0c789b
+000000dd 0000 0004 2221 56c8888e
+000000dd 0000 0000 0add 4a42ff95
+000000e2 00fd 0097 0006 304bfe6a
+000000e3 0000 0000 0add 9e52b89a
+000000e7 0112 008a 0003 df84997a
+000000e8 0000 0000 0add 19dbd9de
+000000ee 00fe 0098 0006 7d1f4667
+000000ef 0000 0000 0add db9aa540
+000000f3 00fc 0089 0001 1f1ddd86
+000000f4 0000 0000 0add 361b115c
+000000f9 012e 0087 0002 f5893539
+000000fa 0000 0000 0add fae98750
+000000fc 0114 0084 0003 04638346
+000000fd 0000 0000 0add dcdf61dd
+00000101 0130 0088 0002 0eaeeef7
+00000102 0000 0000 0add 0b824d13
+00000109 011e 0088 0003 a48e0a04
+0000010a 0000 0000 0add 16c6f641
+0000010f 00f8 0086 0001 629048ef
+00000110 0000 0000 0add 155fd1c4
+0000011b 006f 0053 0050 a5f374d4
+0000011c 0000 0000 0add 6b948284
+00000128 0090 006d 0051 44da5e46
+00000129 0000 0000 0add 73a98d99
+00000138 0109 0083 0003 0447033b

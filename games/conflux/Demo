@@ -1,0 +1,4 @@
+#!/bin/bash
+cd Files
+../../../tachyon --play Playfile.log --large --quick 20000000 --vblmultiplier 99
+

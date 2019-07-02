@@ -1,0 +1,6 @@
+#!/bin/bash
+rm ./Files/config.linux
+cp ./Config/640-400.TXT ./Files/config.linux
+cd Files
+../../../tachyon --large --fullscreen
+

@@ -1,0 +1,6 @@
+KNOWN BUGS:
+* Some monsters are higher than the walls and may be seen over them. They will look weird in doorframes.
+
+* Some lesser graphic incoherences may appear at certain angles of vision. It would be very complex to get rid of them and has no effect on the game.
+
+Comments and critics are welcome. I only can fix bugs I'm aware of! 

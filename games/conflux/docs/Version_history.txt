@@ -1,0 +1,654 @@
+WIP 006
+FIXED: 
+
+
+CHANGED:
+
+ADDED:
+
+
+WIP 005
+FIXED: 
+Any missile hitting party was creating an explosion.
+
+CHANGED:
+
+ADDED:
+
+
+WIP 004
+FIXED: 
+- Ghoultouch could reset vitality to zero.
+- a crash in the altar of doors.
+- some missiles would cause an explosion.
+- lightning would sometimes cause no damage.
+- Coral crab could get hurt by aquantana's mechanisms.
+- obtaining the energize spell would yield an error.
+- some power items would increase wizard experience with time.
+
+CHANGED:
+- awaken armor spell can't fizzle.
+
+ADDED:
+- Helm of Madness has a beneficial effect.
+- Zo liqueur has a negative effect.
+
+
+WIP 003
+FIXED: 
+- some item generators would not stop.
+- water elemental level could be populated before entering it.
+- sundrier bugs.
+- any missile would cause an explosion.
+- magic purses would reset after 30 items.
+- killing the egg mothers wasn't giving a score point anymore.
+
+
+WIP 002
+ADDED:
+- Sound ending for the maleficient guild.
+
+
+WIP 001
+CHANGED:
+- All the files are unencrypted.
+
+Several minor bugs are known.
+
+----------
+
+V3.5 beta 8
+FIXED:
+- DirectX set by default
+
+V3.5 beta 7
+FIXED:
+- the 6 sar keys couldn't open a door in the metamorph's halls.
+- a rare case of DSA flooding.
+
+V3.5 beta 6
+FIXED:
+- minor bugs.
+- dragon armor spell.
+- Lyt armor spell.
+- talk action.
+- locate treasure spell.
+
+CHANGED:
+- optimized some parts that could slow down the game.
+- toned down lightning.
+- flood can now go down through pits and stairs.
+
+ADDED:
+- statues descriptions.
+- a trap in the dwarven vault.
+- monster immunities, vulnerabilities and resistances to lightning.
+- blinking power.
+- room of fate (in-built config for difficulty and slow cpu).
+- two challenges in the palace of the polymorphing wizard.
+
+V3.5 beta 5
+FIXED:
+- overpopulation in the sewers.
+- Vecna's bug.
+- disease bug.
+- missile sound bug.
+- teleporter room dead end.
+
+ADDED:
+- Flood effect.
+- Jitter effect.
+
+V3.5 beta 4
+FIXED:
+- juicy fountains.
+- diseases can be cured.
+
+CHANGED:
+- Toned down stats gains through alchemical potions.
+
+ADDED:
+- Iaido's hand.
+- Unquiet Cerberus.
+
+V3.5 beta 3
+FIXED:
+- missing sound for the Shakes.
+
+CHANGED:
+- Chani's mana.
+- Diseases toned down.
+- curing potions enhanced.
+
+V3.5 beta 2
+FIXED:
+- corpses are restricted to certain tiles.
+- other corpses fixes.
+- big reaper power.
+- beasts fixed.
+- drunkness.
+
+CHANGED:
+- Halk's ending.
+- guild characters are now more powerful.
+
+ADDED:
+- dwarven heroes special stomach.
+- party can be slowed down or paralyzed.
+- new missile behaviours.
+- shields more efficient against missiles.
+- antifire more helpful against fireballs.
+- diseases.
+
+
+V3.5 beta 1
+FIXED:
+- some mechanisms in Leyla ending were too noisy.
+- removed a pit blocking the dark councillor quest.
+- all the spells should give experience.
+- the slow down caused by beholders was almost permanent.
+- the nightmare is back.
+
+CHANGED:
+- items linked to characters must now be found in the dungeon.
+
+ADDED:
+- some items have new powers.
+- some characters have new powers.
+- new level.
+- some useless items should now be more interesting.
+- the beasts within.
+- twists of fate (fate gaze, great reaper).
+- cosmetic enhancements (sounds and graphics).
+- decaying corpses and blood.
+- purses.
+- alchemy.
+- a few new monters.
+
+
+
+V3bugfix V:
+FIXED: some bugs... I guess
+
+V3bugfix IV:
+FIXED:
+- smaug lair was inescapable.
+- scorching whip and some dragon armour pieces weren't granting the due points.
+- munchers are not psychic anymore.
+- the wu tse area doesn't damage you anymore
+- some important items can no longer be put in bags
+- charging or knockbacked monsters would sometime freeze or disappear
+- spells shouldn't fizzle at random anymore
+- a possible dead end in the thieves' maze
+- some growth mechanisms could go wrong
+- under certain conditions the reactor was not accessible
+- treasure hunt spell now correctly acknowledge the treasure of level 13 when found
+- beholders now slow you down instead of hasting you. You won't laugh at them so much.
+- mischievous bag works better.
+- updated clones.
+- anchor spell doesn't consume a coin anymore when failed.
+- and a horde of minor bugs
+
+CHANGED:
+- toned down the aquatic muncher generation
+- toned down funereal weapons
+- archmage fight is different.
+- slightly toned down monks
+- a few monsters can now be pregnant
+- reduced the range of fear aura
+- lyte armor quest is different
+- ashes of Herakles grant a better bonus
+- an internal reorganisation of character specific events. Will prove useful for next version.
+
+ADDED:
+- a special helm
+- wedding ring now useful
+- a few magic items (experimental)
+- guides have enhanced capacities
+
+
+V3bugfix III:
+FIXED:
+- some monsters were attacking backwards
+- canteen fixed
+- ending messages sometimes were displayed wrongly
+
+V3bugfix II:
+
+ADDED:
+- some spells won't work under water.
+- a small part under the mountain.
+
+CHANGED: 
+- monsters in the guild hall will use the teleporter more obviously and coherently.
+- Crypt heroes have better stats.
+- 2nd and 3rd grade guild heroes have better stats.
+- the archmage is now immune to freeze effects.
+- the knockback effect can push into pits and teleporters.
+- upgraded Excalibur, Leviathan, Crystal Blade, Beobow, Hellion and Gift of Tamiel.
+- vampiric weapons are now more effective.
+- coral crab toned down, coral poleyn enhanced.
+- the fight against the archmage is different now.
+- toned down the water dimension.
+- munchers, tormentors, rooflurkers and imps have new attack behaviour.
+- monsters should now be harder to sneak from behind.
+
+FIXED:
+- a rare bug where splitting monsters would get converted to something else.
+- a way to avoid vecna's curse.
+- some broken teleport scrolls.
+- a way to roam freely with Halk's powergem.
+- swift death now only works on fleshy creatures.
+- funereal effect now has a tiny chance to fail.
+- funereal effect doesn't work from backrow anymore.
+- a way to mix endings texts.
+- stoneskin wasn't working.
+- Sar wine, Zo liqueur, Kath vinegar and rust are now consumed properly.
+- a way to get away being guilty.
+- the color scheme of dragon armour is now more coherent.
+- dozens of minor bugs.
+
+
+
+V3bugfix I:
+
+ADDED:
+- an exit to the emmerald path
+- some missing hints for the Oracle
+
+CHANGED: 
+- Chewers, Screamers, Shambling Mounts and Caterpillars are quicker now.
+- mudman behaviour
+- most of the "full party needed" blocks were removed.
+- iron doors are easier to bash.
+
+FIXED:
+- an incoherent decoration.
+- some text mechanisms.
+- size of scorpions
+- footprints spell sometimes didn't expire
+- Ettin starve-to-death trap
+- spider death
+- dead torches igniting explosions.
+- minor bugs
+- infinite generator in the moria.
+- dragon armor spell
+
+
+
+V3Competition:
+
+ADDED:
+- sar wines and zo liqueurs are drinkable now.
+- a scroll to keep record of the score
+
+CHANGED: 
+- the boulders in the mines should integrate better with the wallsets now.
+
+FIXED:
+- egg hatching mechanism
+- an emerald key was missing
+
+
+
+V3k:
+
+ADDED:
+- you will now know when guild ranks are needed to progress further in the experience levels.
+
+CHANGED: 
+- experience progression should be notably faster for the first levels.
+
+
+
+V3j:
+
+ADDED:
+- a few sounds
+
+FIXED:
+- locate treasure spell
+- air rune scrolls
+
+
+
+V3i:
+
+FIXED:
+- a bug that would generate hundreds of missiles and kill Vecna
+
+
+
+V3h:
+
+ADDED:
+- recharger
+- another article for the furs merchant
+
+CHANGED: 
+- giggler and leprechaun populations in the sewers
+- fire shield and magic shield harder to cast
+- Vecna is now better protected
+- fright trump toned down again
+- Lyte set is lighter
+- balanced some weapons
+
+FIXED:
+- a graphical glitch with wallsets
+- too low armor values for some monsters
+- bug with knockback effect
+- monster joining groups would sometime duplicate for a few ticks
+- a rare bug that would cause a savegame to be unreadable
+- master thief mechanism
+- there was a wicked way to escape from the fate linked to the powergem
+- a way to kill Morpanthrax
+- a bug with the hit action
+- the starving fog could follow you through levels
+- some monsters would drop more items than normal when telefragged
+
+
+
+V3g:
+
+CHANGED: 
+- spiders are tougher
+- tweaked Furx, Leviathan, Excalibur
+
+FIXED:
+- power of coral armor
+- more optimizations
+
+
+
+V3f:
+
+CHANGED: 
+- Furx is harder to obtain
+- some keys and locks
+- boots of speed harder to get
+
+FIXED:
+- xp progression easier and smoother
+- saving game doesn't remain disabled when you die.
+- a crash when attacked in ghost form
+
+
+
+V3e:
+
+CHANGED: 
+- inner mechanics to manage character stats, to avoid possible crashes.
+- xp progression
+- initial stamina slightly raised
+
+FIXED:
+- some minor bugs
+
+
+
+V3d:
+
+CHANGED: 
+- Furx won't be so good at first
+
+FIXED:
+- starvation death in Uqbar room
+- scorpion missing sound
+- deep level training cheat
+- a crash while attacking
+- bouncing time
+
+
+
+V3c:
+OPTIMIZED VERSION
+
+ADDED:
+- a little muncher's nest in the mines
+- Gando will be more helpful.
+- torches at the beginning
+- a hint for the truth spell.
+
+CHANGED: 
+- slightly raised the starting hitpoints.
+- raised food values.
+- Vexirks toned down.
+- toned down blow horn and confuse.
+- balanced the guild riddles
+- toned down the mace of order
+
+FIXED:
+- a revealing graphical glitch in the tomb of druafang
+- some weapon locations
+- unleashed hell was impossible to play.
+- gaining level usually didn't increase stats
+
+
+
+V3b:
+
+FIXED:
+- rats were present at level 0 with a bad palette
+- batch files.
+
+
+
+V3a: THE RELEASE!
+
+ADDED:
+- New monsters
+
+CHANGED: 
+- You cannot venture beyond level 7 without a full party (to avoid a way of cheating).
+
+
+
+V3 beta: b to e
+Playtesters: Beowuuf, Trantor, Ian, PitD
+
+FIXED:
+- lots of bugs
+
+
+
+V3 beta a
+playtest version for Trantor and Suule
+
+ADDED:
+- Sounds
+- Skins
+- Monsters' AI
+- unique items
+
+FIXED:
+- graphical glitches
+
+
+
+V2.k
+
+CHANGED: 
+- you cannot wander in the dungeon with the Powergem anymore. This was too unbalancing.
+- you cannot wander in the dungeon with the Crown of Kings anymore. This was too unbalancing.
+- you cannot freeze the council anymore. This was too easy.
+- training against Lord Grey should be harder and limited.
+- Cellar: some tweaks.
+- Shields are now more efficient.
+- Emerald Level: increased cost of the big shortcut.
+- Some duels with special monsters should be more challenging now.
+- Penultimate member of each guild has been boosted in a secondary stat.
+
+ADDED:
+- Spiders lair: Path of Light, Revenge Room, Master Thief.
+- Tower of Mampang: tower of loops, tower of doors, tower of pits.
+- Neta: spider guardians.
+- Ros: Traps, Strong, quick and rich, a clue to deathtrap dungeon.
+- Deathtrap dungeon.
+- Council: Torture Chamber.
+- Crypt: heroes.
+- Sudden death: Weapon replicator.
+- Moria: a third exit.
+- More levels.
+- Curses.
+- Special event/spells for hidden characters.
+- New spells.
+- Sauron's will.
+- Cartographer's Maps.
+- Several unique monster's AI.
+- Hint file.
+- Sounds.
+- Skins.
+- Unique items.
+- Lots of new stuff!
+
+FIXED:
+- a bug with one of Halk's endings.
+- some illegal stairs.
+- Sudden Death: a trap could generate thousands of weapons!
+- some minor bugs.
+- some bugs with the oven.
+- some bugs giving infinite experience.
+
+
+
+
+V2.j
+
+ADDED:
+- Council level: Ra locks.
+- Sudden death: reward and traps.
+- Mines: unstable roof.
+- Spiders lair: furnitures.
+- Sewers: furnitures.
+- Neta: furnitures.
+- Bottom of Ashes Stairs: Thieves Maze.
+- Crypt: Spiteful Spittles.
+
+CHANGED: 
+- the archmage of Mampang should be more impredictable.
+- Council level and vexirks: harder.
+- experience progression should be faster.
+
+FIXED:
+- some mispells and moria texts.
+- precious charges.
+- the false exit should always require a rope.
+- the stick stuck door had the wrong graphic.
+- the final demon after the sudden death will wait for the party.
+- lots of wrong decorations.
+- the egg chamber could be opened by monsters.
+- there was a way to create a powergolem too powerful.
+- Smaug health.
+- "Emerald Guardians" text put back.
+
+
+
+V2.i
+
+FIXED:
+- some texts and false walls in the prison
+- unlimited experience bug in the egg chambers
+- cell of prizes' examinator
+
+
+
+V2.h
+
+CHANGED: 
+- the "supplies for the strong" was not working as wanted.
+
+FIXED:
+- Shrimp bug... again! 
+- Gothmog's text bugs
+- generators at 03(25,24), 07(25,30), 13(00,23)
+- mace of Order glitch
+- trial crash
+
+
+
+V2.g
+The official release!
+
+
+
+V2.a to 2.f
+Playtesting versions
+
+
+
+V2.0
+Graphics.dat edited!
+
+ADDED:
+- several new layouts and traps.
+- the lucky stones idea from Charlatan75
+
+CHANGED: 
+- several graphics (by Cowsmanaut and Charlatan75)
+- physics
+- objects names
+- spells
+
+FIXED:
+- special pushbutton and objectholder bug
+- some texts problems.
+
+
+
+V1.31
+
+FIXED:
+- clones problem
+- texts on stairs and pits
+- actuators on false wall
+- some CSBuild related bugs
+
+
+
+V1.3
+
+ADDED:
+- Moria
+- the bridge riddle from "Tower of Chaos". (PaulH, I hope you don't mind. I just loved too much this idea).
+- furnitures and texts for a better atmosphere
+- mildew references
+- enfers references
+- traps from Christopher's dungeons (like the EE doors). Thank you Christopher.
+
+
+
+V1.2
+Switched to CSBuild
+
+FIXED:
+- overpopulating bugs
+
+
+
+V1.11
+
+FIXED:
+- Cellar:	the teleporter in the rats'nestle now only affect monsters.
+- Crypt:	the access to an unfinished puzzle in the NW area was removed.
+- Temple:	Inscriptions on walls now have a correct wordwrapping.
+
+
+
+V1.1
+Switched to Dmbuiler.
+
+ADDED:
+- Two paths of wisdom in the temple and several tweaks for a better balance.
+
+FIXED:
+- Sewers:	the floor grates swallowing the water elementals are no longer fatal to party
+- Spider level: the SE pit fall has now an exit
+- Mines:	Iaido now talks only when supposed to!
+- Temple:	"Puny shrimps" glitch at least fixed.
+
+
+
+V1.0
+A dungeon with multiple ends and "events" triggered by the characters. 
+For journeymen.
+Ran out of objects with Dmute.
