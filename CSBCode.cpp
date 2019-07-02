@@ -122,7 +122,7 @@ void die(i32 errorNum, const char *msg) // TAG000efc
   UI_Die(errorNum);
 }
 
-void _Assert(bool value, char *program, i32 line, const char *text)
+void _Assert(bool value, const char program[], i32 line, const char text[])
 {
   i32 n;
   if (value==0)
@@ -10583,7 +10583,7 @@ RESTARTABLE _TAG021028(void)
       if (i16Result == 1) break;
       AsciiDump();
     } ;
-#ifndef SDL20
+#if SDL_MAJOR_VERSION != 2
     if (fullscreenRequested)
     {
       UI_ClearScreen();
@@ -11490,7 +11490,7 @@ RESTARTABLE _StartCSB(const CSB_UI_MESSAGE * /*msg*/) //
 #endif
   ShowPrisonDoor(_1_);
   GameIsComplete = false;
-#ifndef SDL20
+#if SDL_MAJOR_VERSION != 2
   if (fullscreenRequested)
   {
     UI_ClearScreen();
