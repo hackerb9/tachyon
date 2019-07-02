@@ -16,7 +16,7 @@ class XTABL
   ppCH m_english[32]; 
   ppCH m_language[32]; 
 public:
-  Clear(void);
+  void Clear(void);
   XTABL(void);
   ~XTABL(void);
   void AddTranslation(const char *s1, int len1, const char *s2, int len2);
@@ -40,7 +40,7 @@ XTABL::~XTABL(void)
   Clear();
 }
 
-XTABL::Clear(void)
+void XTABL::Clear(void)
 {
   int i;
   for (i=0; i<32; i++)
