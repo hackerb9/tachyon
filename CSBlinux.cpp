@@ -42,12 +42,12 @@ bool timerInQueue = false;
 int absMouseX;  // screen resolution; you must divide by screenSize
 int absMouseY;  //    to get position on ST screen.
 
-#if defined SDL12
+#if SDL_MAJOR_VERSION == 1
 int screenWidth, screenHeight;
 #endif
 
 
-#if defined SDL20
+#if SDL_MAJOR_VERSION == 2
 SDL_Window *sdlWindow = NULL;
 SDL_Texture *sdlTexture = NULL;
 SDL_Renderer *sdlRenderer = NULL;
@@ -163,11 +163,11 @@ static void PushEvent(void *param)
   {
     int code;
     code = GPOINTER_TO_INT(param);
-#if defined  SDL12
+#if SDL_MAJOR_VERSION == 1
     if ((code == SDL_VIDEOEXPOSE) || (code == IDC_VIDEOEXPOSE))
     {
       if (SDL_PollEvent(NULL) > 0)
-#elif defined SDL20
+#elif SDL_MAJOR_VERSION == 2
     if (code == IDC_VIDEOEXPOSE)
     {
       if (SDL_PeepEvents(&ev,1,SDL_PEEKEVENT,
@@ -198,11 +198,11 @@ static void PushEvent(void *param)
 
 static void __resize_screen( ui32 w, i32 h ) {
   SDL_Event ev;
-#if defined SDL12
+#if SDL_MAJOR_VERSION == 1
   //ev.type = SDL_VIDEORESIZE;
   //((SDL_ResizeEvent*)&ev) -> w = w;
   //((SDL_ResizeEvent*)&ev) -> h = h;
-#elif defined SDL20
+#elif SDL_MAJOR_VERSION == 2
   ev.type = IDC_VIDEORESIZE;
   ev.user.data1 = GINT_TO_POINTER(w);
   ev.user.data2 = GINT_TO_POINTER(h);
@@ -472,9 +472,9 @@ void DiscardAdditionalTimerEvents(void)
 //  };
   while (1)
   {
-#if defined SDL12
+#if SDL_MAJOR_VERSION == 1
     if(SDL_PeepEvents(&evert,1,SDL_PEEKEVENT,~0) > 0)
-#elif defined SDL20
+#elif SDL_MAJOR_VERSION == 2
     if(SDL_PeepEvents(&evert,1,SDL_PEEKEVENT,
                  SDL_FIRSTEVENT, SDL_LASTEVENT) > 0)
 #else
@@ -521,9 +521,9 @@ void Process_SDL_MOUSEMOTION(
   if (y <    1*screenSize) {y =   1*screenSize;   warp=true;}
   if (warp)
   {
-#ifdef SDL12
+#if SDL_MAJOR_VERSION == 1
     SDL_WarpMouse(x, y);
-#elif defined SDL20
+#elif SDL_MAJOR_VERSION == 2
 //    SDL_WarpMouseGlobal(x, y);
 #else
     xxError
@@ -1144,7 +1144,7 @@ void Process_SDL_KEYDOWN(void)
 {
 //  static int prevp1 = -1;
   MTRACE("SDL_KEYDOWN\n");
-#if defined SDL12
+#if SDL_MAJOR_VERSION == 1
   {
     FILE *f;
     f = fopen("/run/shm/debug", "a");
@@ -1253,19 +1253,19 @@ void Process_SDL_VIDEORESIZE(void)
 //    die(0x661c);
 //  };
   MTRACE("SDL_VIDEORESIZE\n");
-#if defined  SDL12
+#if SDL_MAJOR_VERSION == 1
   SDL_ResizeEvent *e = (SDL_ResizeEvent*) &evert;
   WindowWidth = e->w;
   WindowHeight = e->h;
-#elif defined SDL20
+#elif SDL_MAJOR_VERSION == 2
   NotImplemented(0x55a0);
 #endif
   st_X = 320.0 / ((float)WindowWidth);
   st_Y = 200.0 / ((float)WindowHeight);
-#if defined SDL12
+#if SDL_MAJOR_VERSION == 1
   SDL_FreeSurface(WND);
   WND = SDL_SetVideoMode(WindowWidth,  WindowHeight, 16, SDL_SWSURFACE|SDL_FULLSCREEN);
-#elif defined SDL20
+#elif SDL_MAJOR_VERSION == 2
   NotImplemented(0x3aab);
 #endif 
 #ifndef _DYN_WINSIZE
@@ -1285,7 +1285,7 @@ void Process_SDL_VIDEORESIZE(void)
   UI_Invalidate();
 }
 
-#ifdef SDL20
+#if SDL_MAJOR_VERSION == 2
 
 void Process_SDL_WINDOWEVENT(void)
 {
@@ -1454,9 +1454,9 @@ int main (int argc, char* argv[])
     //g_error("Unable to init SDL: %s", SDL_GetError() );
   };
   printf("SDL initialized.\n");
-#if defined SDL12
+#if SDL_MAJOR_VERSION == 1
   SDL_WM_SetCaption(APPTITLE, NULL);
-#elif defined SDL20
+#elif SDL_MAJOR_VERSION == 2
   // NotImplemented(0x87ea);
 #else
   xxxError
@@ -1465,7 +1465,7 @@ int main (int argc, char* argv[])
 
 // ****************************** the DISPLAY ****************************************************
   {
-#if defined SDL12
+#if SDL_MAJOR_VERSION == 1
     const SDL_VideoInfo *info;
     info = SDL_GetVideoInfo();
     screenWidth = info->current_w;
@@ -1487,7 +1487,7 @@ int main (int argc, char* argv[])
       fclose(f);
     };
     fullscreenActive = true;
-#elif defined SDL20
+#elif SDL_MAJOR_VERSION == 2
     int flags;
     screenSize = 1;
     flags = 0;
@@ -1540,7 +1540,7 @@ int main (int argc, char* argv[])
     converter = Hermes_ConverterInstance( HERMES_CONVERT_NORMAL );
     from_format = Hermes_FormatNew(8,0,0,0,0,TRUE);
 #else
-#ifdef SDL12
+#if SDL_MAJOR_VERSION == 1
     SCRAP = SDL_CreateRGBSurface(SDL_SWSURFACE,screenWidth,screenHeight,8,0,0,0,0);
     {
       FILE *f;
@@ -1560,9 +1560,9 @@ int main (int argc, char* argv[])
     g_error("Unable to init Timer: %s", SDL_GetError() );
   }
 
-#if defined SDL12
+#if SDL_MAJOR_VERSION == 1
   SDL_UpdateRect(WND, 0, 0, 0, 0);
-#elif defined SDL20
+#elif SDL_MAJOR_VERSION == 2
   // Nothing needed here???
   // NotImplemented(0x85ea);
 #else
@@ -1573,9 +1573,9 @@ int main (int argc, char* argv[])
   if(fullscreenRequested)
   {
     fullscreenActive = true;
-#if defined SDL12
+#if SDL_MAJOR_VERSION == 1
     //SDL_WM_ToggleFullScreen(WND);
-#elif defined SDL20
+#elif SDL_MAJOR_VERSION == 2
     //NotImplemented(0x84ea);
 #else
     xxxError
@@ -1741,9 +1741,9 @@ int main (int argc, char* argv[])
       case SDL_MOUSEBUTTONUP:   Process_SDL_MOUSEBUTTONUP();   break;
       case SDL_KEYDOWN:         Process_SDL_KEYDOWN();         break;
       case SDL_KEYUP:           Process_SDL_KEYUP();           break;
-#if defined SDL12
+#if SDL_MAJOR_VERSION == 1
       case SDL_VIDEORESIZE:     Process_SDL_VIDEORESIZE();     break;
-#elif defined SDL20
+#elif SDL_MAJOR_VERSION == 2
       case SDL_WINDOWEVENT:     Process_SDL_WINDOWEVENT();    break;
 #else
       xxxError
