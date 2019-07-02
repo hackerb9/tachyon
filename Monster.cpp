@@ -18,7 +18,7 @@ bool IsPlayFileOpen(void);
 const char *TimerName(TIMERTYPE tt)
 {
   const char *timeFuncName;
-  char name[20];
+  static char name[20];
   switch (tt)
   {
   case TT_M1:             timeFuncName = "TT_M1";             break;
