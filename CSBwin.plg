@@ -1,0 +1,205 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: CSBwin - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x409 /fo"Release/CSBwin.res" /d "NDEBUG" "C:\Projects\CSBwin\CSBwin.rc"" 
+Creating temporary file "C:\DOCUME~1\USER\LOCALS~1\Temp\RSP7.tmp" with contents
+[
+/nologo /ML /W4 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_MSVC_INTEL" /D "_MIDI" /D "RGB555" /D "WIN98" /FR"Release/" /Fp"Release/CSBwin.pch" /Yu"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\Projects\CSBwin\AsciiDump.cpp"
+"C:\Projects\CSBwin\Attack.cpp"
+"C:\Projects\CSBwin\Bitmaps.cpp"
+"C:\Projects\CSBwin\Chaos.cpp"
+"C:\Projects\CSBwin\Character.cpp"
+"C:\Projects\CSBwin\Code11f52.cpp"
+"C:\Projects\CSBwin\Code13ea4.cpp"
+"C:\Projects\CSBwin\Code17818.cpp"
+"C:\Projects\CSBwin\Code1f9e6.cpp"
+"C:\Projects\CSBwin\Code222ea.cpp"
+"C:\Projects\CSBwin\Code390e.cpp"
+"C:\Projects\CSBwin\Code51a4.cpp"
+"C:\Projects\CSBwin\Codea59a.cpp"
+"C:\Projects\CSBwin\CSBCode.cpp"
+"C:\Projects\CSBwin\CSBUI.cpp"
+"C:\Projects\CSBwin\CSBwin.cpp"
+"C:\Projects\CSBwin\data.cpp"
+"C:\Projects\CSBwin\DSA.cpp"
+"C:\Projects\CSBwin\Graphics.cpp"
+"C:\Projects\CSBwin\Hint.cpp"
+"C:\Projects\CSBwin\Magic.cpp"
+"C:\Projects\CSBwin\Menu.cpp"
+"C:\Projects\CSBwin\Monster.cpp"
+"C:\Projects\CSBwin\Mouse.cpp"
+"C:\Projects\CSBwin\MoveObject.cpp"
+"C:\Projects\CSBwin\Recording.cpp"
+"C:\Projects\CSBwin\SaveGame.cpp"
+"C:\Projects\CSBwin\SmartDiscard.cpp"
+"C:\Projects\CSBwin\Sound.cpp"
+"C:\Projects\CSBwin\Statistics.cpp"
+"C:\Projects\CSBwin\system.cpp"
+"C:\Projects\CSBwin\Timer.cpp"
+"C:\Projects\CSBwin\Translation.cpp"
+"C:\Projects\CSBwin\utility.cpp"
+"C:\Projects\CSBwin\VBL.cpp"
+"C:\Projects\CSBwin\Viewport.cpp"
+"C:\Projects\CSBwin\WinScreen.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\USER\LOCALS~1\Temp\RSP7.tmp" 
+Creating temporary file "C:\DOCUME~1\USER\LOCALS~1\Temp\RSP8.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib /nologo /subsystem:windows /profile /map:"Release/CSBwin.map" /machine:I386 /out:"Release/CSBwin.exe" 
+.\Release\AsciiDump.obj
+.\Release\Attack.obj
+.\Release\Bitmaps.obj
+.\Release\Chaos.obj
+.\Release\Character.obj
+.\Release\Code11f52.obj
+.\Release\Code13ea4.obj
+.\Release\Code17818.obj
+.\Release\Code1f9e6.obj
+.\Release\Code222ea.obj
+.\Release\Code390e.obj
+.\Release\Code51a4.obj
+.\Release\Codea59a.obj
+.\Release\CSBCode.obj
+.\Release\CSBUI.obj
+.\Release\CSBwin.obj
+.\Release\data.obj
+.\Release\DSA.obj
+.\Release\Graphics.obj
+.\Release\Hint.obj
+.\Release\Magic.obj
+.\Release\md5C.obj
+.\Release\Menu.obj
+.\Release\Monster.obj
+.\Release\Mouse.obj
+.\Release\MoveObject.obj
+.\Release\NewBugs.obj
+.\Release\RC4.obj
+.\Release\Recording.obj
+.\Release\SaveGame.obj
+.\Release\SmartDiscard.obj
+.\Release\Sound.obj
+.\Release\Statistics.obj
+.\Release\StdAfx.obj
+.\Release\system.obj
+.\Release\Timer.obj
+.\Release\Translation.obj
+.\Release\utility.obj
+.\Release\VBL.obj
+.\Release\Viewport.obj
+.\Release\WinScreen.obj
+.\Release\CSBwin.res
+]
+Creating command line "link.exe @C:\DOCUME~1\USER\LOCALS~1\Temp\RSP8.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+AsciiDump.cpp
+Attack.cpp
+Bitmaps.cpp
+Chaos.cpp
+Character.cpp
+Code11f52.cpp
+Code13ea4.cpp
+Code17818.cpp
+Code1f9e6.cpp
+Code222ea.cpp
+Code390e.cpp
+Code51a4.cpp
+Codea59a.cpp
+CSBCode.cpp
+CSBUI.cpp
+CSBwin.cpp
+data.cpp
+DSA.cpp
+Graphics.cpp
+Hint.cpp
+Generating Code...
+Compiling...
+Magic.cpp
+Menu.cpp
+Monster.cpp
+Mouse.cpp
+MoveObject.cpp
+Recording.cpp
+SaveGame.cpp
+SmartDiscard.cpp
+Sound.cpp
+Statistics.cpp
+system.cpp
+Timer.cpp
+Translation.cpp
+utility.cpp
+VBL.cpp
+Viewport.cpp
+WinScreen.cpp
+Generating Code...
+Linking...
+Creating temporary file "C:\DOCUME~1\USER\LOCALS~1\Temp\RSPA.tmp" with contents
+[
+/nologo /o"Release/CSBwin.bsc" 
+.\Release\StdAfx.sbr
+.\Release\AsciiDump.sbr
+.\Release\Attack.sbr
+.\Release\Bitmaps.sbr
+.\Release\Chaos.sbr
+.\Release\Character.sbr
+.\Release\Code11f52.sbr
+.\Release\Code13ea4.sbr
+.\Release\Code17818.sbr
+.\Release\Code1f9e6.sbr
+.\Release\Code222ea.sbr
+.\Release\Code390e.sbr
+.\Release\Code51a4.sbr
+.\Release\Codea59a.sbr
+.\Release\CSBCode.sbr
+.\Release\CSBUI.sbr
+.\Release\CSBwin.sbr
+.\Release\data.sbr
+.\Release\DSA.sbr
+.\Release\Graphics.sbr
+.\Release\Hint.sbr
+.\Release\Magic.sbr
+.\Release\md5C.sbr
+.\Release\Menu.sbr
+.\Release\Monster.sbr
+.\Release\Mouse.sbr
+.\Release\MoveObject.sbr
+.\Release\NewBugs.sbr
+.\Release\RC4.sbr
+.\Release\Recording.sbr
+.\Release\SaveGame.sbr
+.\Release\SmartDiscard.sbr
+.\Release\Sound.sbr
+.\Release\Statistics.sbr
+.\Release\system.sbr
+.\Release\Timer.sbr
+.\Release\Translation.sbr
+.\Release\utility.sbr
+.\Release\VBL.sbr
+.\Release\Viewport.sbr
+.\Release\WinScreen.sbr]
+Creating command line "bscmake.exe @C:\DOCUME~1\USER\LOCALS~1\Temp\RSPA.tmp"
+Creating browse info file...
+<h3>Output Window</h3>
+Creating temporary file "C:\DOCUME~1\USER\LOCALS~1\Temp\RSPB.bat" with contents
+[
+@echo off
+copy release\CSBwin.exe .\*.*
+]
+Creating command line "C:\DOCUME~1\USER\LOCALS~1\Temp\RSPB.bat"
+copy release executable
+        1 file(s) copied.
+
+
+
+<h3>Results</h3>
+CSBwin.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

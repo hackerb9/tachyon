@@ -1,0 +1,323 @@
+# Microsoft Developer Studio Generated Dependency File, included by CSBwin.mak
+
+.\AsciiDump.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Attack.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Bitmaps.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Chaos.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Character.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Code11f52.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Code13ea4.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Code17818.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Code1f9e6.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Code222ea.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Code390e.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Code51a4.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Codea59a.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\CSBCode.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\CSBUI.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\CSBwin.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\CSBwin.rc : \
+	".\CSBwin.ico"\
+	".\small.ico"\
+	
+
+.\data.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\DSA.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Graphics.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Hint.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Magic.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\md5C.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	
+
+.\Menu.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Monster.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Mouse.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\NewBugs.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	
+
+.\RC4.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	
+
+.\SaveGame.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\SmartDiscard.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Sound.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\StdAfx.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSBTypes.h"\
+	".\StdAfx.h"\
+	
+
+.\system.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	".\windowsfilename.inl"\
+	
+
+.\Timer.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\utility.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\VBL.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Viewport.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	
+
+.\Win32_SoundMixer.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	
+
+.\WinScreen.cpp : \
+	"..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	".\CSB.h"\
+	".\Data.h"\
+	".\Dispatch.h"\
+	".\Objects.h"\
+	".\UI.h"\
+	

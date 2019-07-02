@@ -1,0 +1,30 @@
+// Change this to your bundle identifier string
+#define kBundleIdentifier "com.shi.chaosstrikesback"
+
+// Change this to your short version string
+#define kBundleShortVersion "Chaos Strikes Back 2.0 (v9.7)"
+
+// Change this to the string to display in the Finder's Get Info window
+#define kBundleGetInfo kBundleShortVersion ", Copyright © 1987-2004 by Software Heaven, Inc.  All rights reserved."
+
+plist
+{
+	dictionary
+	{
+		key "CFBundleIdentifier" value string kBundleIdentifier
+		
+		key "CFBundleName" value string __OUTPUT_FILENAME__
+		key "CFBundleGetInfoString" value string kBundleGetInfo
+		key "CFBundleShortVersionString" value string kBundleShortVersion
+		
+		key "CFBundlePackageType" value string __OUTPUT_TYPE__
+		key "CFBundleSignature" value string __OUTPUT_CREATOR__
+		key "CFBundleExecutable" value string __OUTPUT_FILENAME__
+		key "CFBundleVersion" value string "1.0"
+		
+		key "CFBundleDevelopmentRegion" value string "English"
+		key "CFBundleInfoDictionaryVersion" value string "6.0"
+		key "LSRequiresCarbon" value boolean true
+//		key "CFBundleIcon" value string "Chaos.icns"
+	}
+}
