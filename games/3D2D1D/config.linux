@@ -1,4 +1,6 @@
-;
+; -*- mode: conf; comment-start-skip: ";+\\s*"  comment-start: ";" -*-
+; Internal timer in ms
+timer "10";
 ;  key translations
 ;
 ; scan  mode  <PC scan code>    <ATARI key code>
@@ -26,61 +28,85 @@
 ; mode 2 is used during ReIncarnation.
 ;
 ;
-key  1 00001b 00001b  ;  escape = Freeze Game
+key  1   00001b 00001b  ;  escape = Freeze Game
 ;
-key  1 00006b 480000  ; 'k' = move forward
-key  1 00004b 480000  ; 'K' = move forward
-scan 1 000048 480000  ; Keypad '8' = move forward
+key  1   00006b 480000  ; 'k' = move forward
+key  1   00004b 480000  ; 'K' = move forward
+scan 1   000048 480000  ; Keypad '8' = move forward
+key  1 40000060 480000  ; SDL Keypad '8' = move forward
 ;
-key  1 00006c 470000  ; 'l' = turn right
-key  1 00004c 470000  ; 'L' = turn right
-scan 1 000049 470000  ; Keypad '9' = turn right
+key  1   00006c 470000  ; 'l' = turn right
+key  1   00004c 470000  ; 'L' = turn right
+scan 1   000049 470000  ; Keypad '9' = turn right
+key  1 40000061 470000  ; SDL Keypad '9'
 ;
 key  1 00006a 520000  ; 'j' = turn left
-key  1 00004a 520000  ; 'J' = turn left
-scan 1 000047 520000  ; Keypad '7' = turn left
+key  1   00004a 520000  ; 'J' = turn left
+scan 1   000047 520000  ; Keypad '7' = turn left
+key  1 4000005f 520000  ; SDL Keypad '7'
 ;
-key  1 00002e 4d0000  ; '.' = move right
-scan 1 00004d 4d0000  ; Keypad '6' = move right
+key  1   00002e 4d0000  ; '.' = move right
+scan 1   00004d 4d0000  ; Keypad '6' = move right
+key  1 4000005e 4d0000  ; SDL Keypad '6'
 ;
-key  1 00006d 4b0000  ; 'm' = move left
-key  1 00004d 4b0000  ; 'M' = move left
-scan 1 00004b 4b0000  ; Keypad '4' = move left
+key  1   00006d 4b0000  ; 'm' = move left
+key  1   00004d 4b0000  ; 'M' = move left
+scan 1   00004b 4b0000  ; Keypad '4' = move left
+key  1 4000005c 4b0000  ; SDL Keypad '4'
 ;
-key  1 00002c 500000  ; ',' = move backward
-scan 1 00004c 500000  ; Keypad '5' = move backward
+key  1   00002c 500000  ; ',' = move backward
+scan 1   00004c 500000  ; Keypad '5' = move backward
+key  1 4000005d 500000  ; SDL Keypad '5'
 ;
+; In order to play the 3D2D1D puzzle we define the '+' and '-' keys.
+key  1 00002d 490000
 scan 1 00000c 490000  ; '-' Move down level
 ;
+key  1 00002b 4a0000  ; '+'
+key  1 00003d 4a0000  ; '='  ; Same key as '+'
 scan 1 00000d 4a0000  ; '+' Move up level
 ;
-mscan 1 0051  f0 5c L  ; 'Q' = character 1 weapon / first attack
-mscan 1 0057 104 5c L  ; 'W' = character 2 weapon / first attack
-mscan 1 0045 11c 5c L  ; 'E' = character 3 weapon / first attack
-mscan 1 0052 138 5c L  ; 'R' = character 4 weapon / first attack
-mscan 1 0041  f0 68 L  ; 'A' = character 1 weapon / second attack
-mscan 1 0053 104 68 L  ; 'S' = character 2 weapon / second attack
-mscan 1 0044 11c 68 L  ; 'D' = character 3 weapon / second attack
-mscan 1 0046 138 68 L  ; 'F' = character 4 weapon / second attack
-mscan 1 005a  f0 74 L  ; 'Z' = character 1 weapon / third attack
-mscan 1 0058 104 74 L  ; 'X' = character 2 weapon / third attack
-mscan 1 0043 11c 74 L  ; 'C' = character 3 weapon / third attack
-mscan 1 0056 138 74 L  ; 'V' = character 4 weapon / third attack
+mscan 1 0071  f0 5c L  ; SDL 'q' = character 1 weapon / first attack
+mscan 1 0077 104 5c L  ; SDL 'w' = character 2 weapon / first attack
+mscan 1 0065 11c 5c L  ; SDL 'e' = character 3 weapon / first attack
+mscan 1 0072 138 5c L  ; SDL 'r' = character 4 weapon / first attack
+mscan 1 0061  f0 68 L  ; SDL 'a' = character 1 weapon / second attack
+mscan 1 0073 104 68 L  ; SDL 's' = character 2 weapon / second attack
+mscan 1 0064 11c 68 L  ; SDL 'd' = character 3 weapon / second attack
+mscan 1 0066 138 68 L  ; SDL 'f' = character 4 weapon / second attack
+mscan 1 007a  f0 74 L  ; SDL 'z' = character 1 weapon / third attack
+mscan 1 0078 104 74 L  ; SDL 'x' = character 2 weapon / third attack
+mscan 1 0063 11c 74 L  ; SDL 'c' = character 3 weapon / third attack
+mscan 1 0076 138 74 L  ; SDL 'v' = character 4 weapon / third attack
 mscan 1 0031  f0 37 L  ; '1' = first rune
 mscan 1 0032  fe 37 L  ; '2' = second rune
 mscan 1 0033 10a 37 L  ; '3' = third rune
 mscan 1 0034 11d 37 L  ; '4' = fourth rune
 mscan 1 0035 128 37 L  ; '5' = fifth rune
 mscan 1 0036 136 37 L  ; '6' = sixth rune
-mscan 1 00c0 136 43 L  ; '~' = backspace rune
+mscan 1 0008 136 43 L  ; SDLK_BACKSPACE  ;'~' = backspace rune
 mscan 1 0020 10d 41 L  ; space = cast spell
-;mscan 1 0020 064 64 R  ; space = leader's inventory
-mscan 1 0070 200 2e L  ; F1  = first magic caster
-mscan 1 0071 201 2e L  ; F2  = second magic caster
-mscan 1 0072 202 2e L  ; F3  = third magic caster
-mscan 1 0073 203 2e L  ; F4  = forth magic caster
+mscan 1 4000003A  f0 2B L  ; SDL F1  = first magic caster
+mscan 1 4000003B 11d 2B L  ; SDL F2  = second magic caster (only works if F1 pressed first)
+mscan 1 4000003C 128 2B L  ; SDL F3  = third magic caster (only works if F1 pressed first)
+mscan 1 4000003D 136 2B L  ; SDL F4  = forth magic caster
 mscan 1 0010 114 2f L  ; Shift = No operation
 mscan 1 0009 131 50 L  ; TAB = Pass (Cancel Attack)
+;
+mscan 1 0100  43  9d L  ; SDL KP0 = 	pick up left near	 67.157
+mscan 1 007f  43  9d L  ; SDL delete =      -""-
+mscan 1 010a  9a  9f L  ; SDL KP_comma = pick up right near	154.159
+mscan 1 0119  9a  9f L  ; SDL pgdown =      -""-
+mscan 1 0101  4d  8c L  ; SDL KP1 = 	pick up left far	 77.140
+mscan 1 0115  4d  8c L  ; SDL insert =      -""-
+mscan 1 0102  6b  73 L  ; SDL KP2 = 	pick up alcove		107.115
+mscan 1 0116  6b  73 L  ; SDL home =        -""-
+mscan 1 0103  96  8c L  ; SDL KP3 = 	pick up right far	150.140
+mscan 1 0118  96  8c L  ; SDL pgup =        -""-
+mscan 1 010e  a9  51 L  ; SDL KP_plus = door switch		169.81
+;mscan 1 012c  59  50 L  ; SDL KP_numlck = throw left		89.80
+mscan 1 010b  6f  50 L  ; SDL KP_div = 	throw left, key locks, etc		108.75 111.80
+mscan 1 010c  93  4f L  ; SDL KP_* = 	throw right		147.79
 ;
 key 2 000041 000041  ; 'A' -> 'A'
 key 2 000061 000061  ; 'a' -> 'a'
