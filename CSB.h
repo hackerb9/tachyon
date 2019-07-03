@@ -499,6 +499,8 @@ enum EXTENDEDFLAGS
   DefaultDirectX          = 0x00000040,
   ExtendedTimers          = 0x00000080,  // 32-bit time + 8-bit level.
   SupressDSAWarning       = 0x00000100,  // Excessive DSA execution time.
+  GravityGame             = 0x00000200,
+  ThreeDMovements         = 0x00000400,
 };
   i32       overlayOrdinal; //overlay Number + 1
   i32       overlayP1;

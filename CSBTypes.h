@@ -40,20 +40,23 @@
 #endif
 
 #if defined _MSVC_INTEL || defined _MSVC_CE2002ARM 
-typedef signed char i8;     // signed 8-bit integer
-typedef unsigned char ui8;
-typedef _int16 i16;  // signed 16-bit integer
-typedef unsigned _int16 ui16;
-typedef int i32;  // signed 32-bit integer
-typedef unsigned int ui32;
-typedef _int64 i64; //signed 64-bit integer
-typedef unsigned _int64 ui64; //unsigned 64-bit integer
-typedef i8 *pnt;
-typedef ui8 *upnt;
-typedef unsigned int bool32;
-typedef unsigned _int16 HTIMER;  // A handle to a timer entry;
-typedef ui32 uintptr_t;
-typedef i32   intptr_t;
+typedef signed char      i8;     // signed 8-bit integer
+typedef unsigned char    ui8;
+typedef _int16           i16;  // signed 16-bit integer
+typedef unsigned _int16  ui16;
+//typedef int              i32;  // signed 32-bit integer
+//typedef unsigned int     ui32;
+typedef _int64           i64; //signed 64-bit integer
+typedef unsigned _int64  ui64; //unsigned 64-bit integer
+typedef i8              *pnt;
+typedef ui8             *upnt;
+typedef unsigned int     bool32;
+typedef unsigned _int16  HTIMER;  // A handle to a timer entry;
+
+// PRS 20190701 typedef ui32             uintptr_t;
+// PRS 20190701 typedef i32              intptr_t;
+typedef unsigned __int32 ui32; // PRS 20190701
+typedef __int32          i32;  // PRS 20190701
 #else
 # ifdef _LINUX
   typedef guint32 HWND;

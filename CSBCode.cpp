@@ -8127,7 +8127,7 @@ MOVEBUTN *MoveParty(const i32 button)
     };
   };
 
-  if (GravityGame)
+  if (bGravityGame)
   {
     gravityMove = true;
     nextGravityMoveTime = d.Time + 2;
@@ -8524,7 +8524,7 @@ void TAG0196da(i32 key)
           pxA3++;
         };
       };
-      if (ThreeDMovements)
+      if (bThreeDMovements)
       {
         if (   (key == 0x4a00)
             || (key == 0x4900)
