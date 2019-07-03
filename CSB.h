@@ -390,7 +390,7 @@ public:
   BACKGROUND_MASK  *GetMask(ui32 graphicID, ui32 maskNumber, ui32 minimumSize);
   BACKGROUND_MASK  *MaskExists(ui32 graphicID, ui32 maskNumber);
   ui32 *GetBitmap(ui32 graphicID, ui32 minimumSize, ui32 *bitmapSize);
-  void DumpGraphic(i32 graphicID, i32 maskNum, char *extension);
+  void DumpGraphic(i32 graphicID, i32 maskNum, const char extension[]);
   void InsertBitmap(ui32 ID, ui32 size, ui32 *address);
   BACKGROUND_MASK *CreateNewMask(ui32 ID, ui32 num, BACKGROUND_MASK *pMask);
   AFFINEMASK *CreateNewAffineMask(ui32 ID, ui32 num, AFFINEMASK *paffine);
@@ -499,6 +499,8 @@ enum EXTENDEDFLAGS
   DefaultDirectX          = 0x00000040,
   ExtendedTimers          = 0x00000080,  // 32-bit time + 8-bit level.
   SupressDSAWarning       = 0x00000100,  // Excessive DSA execution time.
+  GravityGame             = 0x00000200,
+  ThreeDMovements         = 0x00000400,
 };
   i32       overlayOrdinal; //overlay Number + 1
   i32       overlayP1;

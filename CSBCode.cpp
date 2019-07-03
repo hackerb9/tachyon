@@ -122,7 +122,7 @@ void die(i32 errorNum, const char *msg) // TAG000efc
   UI_Die(errorNum);
 }
 
-void _Assert(bool value, char *program, i32 line, const char *text)
+void _Assert(bool value, const char program[], i32 line, const char text[])
 {
   i32 n;
   if (value==0)
@@ -8127,7 +8127,7 @@ MOVEBUTN *MoveParty(const i32 button)
     };
   };
 
-  if (GravityGame)
+  if (bGravityGame)
   {
     gravityMove = true;
     nextGravityMoveTime = d.Time + 2;
@@ -8524,7 +8524,7 @@ void TAG0196da(i32 key)
           pxA3++;
         };
       };
-      if (ThreeDMovements)
+      if (bThreeDMovements)
       {
         if (   (key == 0x4a00)
             || (key == 0x4900)

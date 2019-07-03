@@ -4575,7 +4575,8 @@ RESTARTABLE _DrawCharacterEditorScreen(void)
   static dReg D7;
   static wordRectPos rect_8;
   static const char *pTranslatedText;
-  static int textLength;
+// PRS 20190701  static int textLength;
+  static i32 textLength; // PRS 20190701
   RESTARTMAP
     RESTART(1)
   END_RESTARTMAP
@@ -4592,13 +4593,13 @@ RESTARTABLE _DrawCharacterEditorScreen(void)
 
   // *****   UNDO  button  **********
   pTranslatedText = TranslateLanguage("UNDO");
-  textLength = strlen(pTranslatedText);
+  textLength = (i32)strlen(pTranslatedText);
   dlgButton5050[8].rectPos2.x1 = (i16)(dlgButton5050[8].rectPos2.x2 - 5*textLength - 10);
   AddDialogButton(&dlgButton5050[8],  TranslateLanguage("UNDO"), 2);
 
   // *****   QUIT  button  **********
   pTranslatedText = TranslateLanguage("QUIT");
-  textLength = strlen(pTranslatedText);
+  textLength = (i32)strlen(pTranslatedText);
   dlgButton5050[16].rectPos2.x1 = (i16)(dlgButton5050[16].rectPos2.x2 - 5*textLength - 10);
   AddDialogButton(&dlgButton5050[16], TranslateLanguage("QUIT"), 2);
 
@@ -6478,7 +6479,11 @@ i32 TAG008788(i16,i32,uintptr_t)
 
 }
 
+#ifdef impEditCharacterName
 void EditCharacterName(char key)
+#else
+void EditCharacterName(char /*key*/)
+#endif
 {
 #ifdef impEditCharacterName
 	char* name;

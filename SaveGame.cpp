@@ -424,6 +424,10 @@ i32 ReadExtendedFeatures(i32 handle)
        (efb.extendedFlags & EXTENDEDFEATURESBLOCK::ExtendedWallDecorations) != 0;
   overlayActive = 
        (efb.extendedFlags & EXTENDEDFEATURESBLOCK::OverlayActive) != 0;
+  bGravityGame = 
+       (efb.extendedFlags & EXTENDEDFEATURESBLOCK::GravityGame) != 0;
+  bThreeDMovements =
+       (efb.extendedFlags & EXTENDEDFEATURESBLOCK::ThreeDMovements) != 0;
   if (efb.overlayOrdinal > 0)
   {
     SelectOverlay(efb.overlayOrdinal-1,

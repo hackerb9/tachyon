@@ -237,8 +237,8 @@ i32  MostRecentlyAdjustedSkills[2] = {0,0}; //Just for Player display
 i32  LatestSkillValues[2] = {0,0}; //Just for Player display.
 i32  AdjustedSkillNumber = 0;
 bool AutoEnlarge = false;
-bool ThreeDMovements = false; //For 3DMaze
-bool GravityGame = false;     //For 3DMaze
+bool bThreeDMovements = false; //For 3DMaze
+bool bGravityGame = false;     //For 3DMaze
 unsigned char cipherkey[64];
 unsigned char *encipheredDataFile = NULL;//cipherkey;
 bool simpleEncipher = false;
