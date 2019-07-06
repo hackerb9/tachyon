@@ -10,13 +10,10 @@ Microsoft Windows.
 # Wait, this is just CSBwin!
 
 Yes. And no. I have set up "main" of this repository to be simply a
-mirror of Paul R. Stevens's [CSBwin](http://dianeandpaul.net/CSBwin/).
+mirror of Paul R. Stevens's [CSBwin](http://dianneandpaul.net/CSBwin/).
 However, if you checkout the
-[TACHYON branch](https://github.com/hackerb9/tachyon/tree/tachyon/),
+[TACHYON branch](https://github.com/hackerb9/tachyon/blob/tachyon/README.md/),
 you'll see the changes I've been making.
 
-I do not expect to make earth shattering changes. Mainly, I'm doing
-cleanup and maintenance since Mr. Stevens no longer wishes to be the
-maintainer (beyond severe bugs). For example, I made it easier to
-compile under modern UNIX systems. 
+    git clone -b tachyon https://github.com/hackerb9/tachyon 
 
