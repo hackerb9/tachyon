@@ -50,6 +50,25 @@ Usage:
     make archive        Create a tar of the source code in the parent directory.
                         (Filename will include version number and today's date.)
 
+# Running
+
+To run TACHYON, you'll need to have the game data files which are
+included in the games directory. You also need to `cd` to that
+directory before running TACHYON. (This is a limitation I hope to fix
+in the future).
+
+For example, to play Dungeon Master, you would do:
+
+    cd games/dm
+    ../../tachyon
+
+There are also shell scripts in the same directory which let you play
+TACHYON with a given window size (or full screen). E.g., to run at
+1280x1024, you would type:
+
+    cd games/dm
+    ./play1280
+
 # Legal Note about data files
 
 While the code Mr. Stevens wrote may be free software, technically the
